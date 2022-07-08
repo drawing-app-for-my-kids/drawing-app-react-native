@@ -1,67 +1,27 @@
 import React, { useEffect, useLayoutEffect, useState, useRef } from "react";
 import styled from "styled-components/native";
 import { View, StyleSheet, Alert, Pressable, FlatList } from "react-native";
-import Canvas, { Image as CanvasImage } from "react-native-canvas";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
 import ColorButtonItem from "../components/buttons/ColorButton";
 import { colorList } from "../constants/painterOptions";
+import SkiaCanvas from "../components/Canvas";
 
 const PainterScreen = ({ route, navigation }) => {
   const [currentModal, setCurrentModal] = useState();
   const [currentPenType, setCurrentPenType] = useState("grease-pencil");
   const [currentPenColor, setCurrentPenColor] = useState("black");
-  const ref = useRef(null);
-  const MAX_CANVAS_WIDTH = 1051;
-  const MAX_CANVAS_HEIGHT = 759;
 
-  // console.log("route.params", route.params);
-
+  console.log(currentPenColor);
+  console.log("route.params", route.params);
   const filePath = route.params ? route.params.item.filePath : null;
-  // console.log(filePath);
-
-  useEffect(() => {
-    if (ref.current) {
-      const ctx = ref.current.getContext("2d");
-      const canvas = ref.current;
-      canvas.width = 1051;
-      canvas.height = 759;
-
-      if (filePath) {
-        let img = new CanvasImage(canvas);
-        img.src = `${filePath}`;
-
-        img.addEventListener("load", () => {
-          console.log("Load!!");
-          const widthRatio = img.width / MAX_CANVAS_WIDTH;
-          const heightRatio = img.height / MAX_CANVAS_HEIGHT;
-
-          const width =
-            widthRatio > heightRatio
-              ? MAX_CANVAS_WIDTH
-              : (img.width * MAX_CANVAS_HEIGHT) / img.height;
-
-          const height =
-            widthRatio > heightRatio
-              ? (img.height * MAX_CANVAS_WIDTH) / img.width
-              : MAX_CANVAS_HEIGHT;
-
-          const offsetX = Math.floor((MAX_CANVAS_WIDTH - width) / 2);
-          const offsetY = Math.floor((MAX_CANVAS_HEIGHT - height) / 2);
-
-          ctx.drawImage(img, offsetX, offsetY, width, height);
-        });
-      }
-    }
-  }, [ref]);
+  console.log("filePath", filePath);
 
   return (
     <Contatiner>
       <LeftMainView>
-        <CanvasView>
-          <Canvas ref={ref} style={styles.canvas} />
-        </CanvasView>
+        {filePath && <SkiaCanvas filePath={filePath ? filePath : null} />}
       </LeftMainView>
       <RightControlView>
         <ButtonsView>
@@ -287,13 +247,6 @@ const Contatiner = styled.View`
 
 const LeftMainView = styled.View`
   width: 88%;
-  height: 100%;
-  display: flex;
-  background-color: white;
-`;
-
-const CanvasView = styled.View`
-  width: 100%;
   height: 100%;
   display: flex;
 `;
