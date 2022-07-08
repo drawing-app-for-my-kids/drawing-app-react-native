@@ -1,0 +1,8 @@
+{
+  "name": "drawing",
+  "displayName": "drawing",
+  "ios": {
+    "bundleIdentifier": "drawing",
+    "supportsTablet": true
+  }
+}
