@@ -1,71 +1,87 @@
-import React from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  Fragment,
+} from "react";
 import { StyleSheet } from "react-native";
 
 import {
   Canvas,
   Circle,
-  Group,
-  LinearGradient,
-  vec,
   useImage,
   Image,
+  useValue,
+  useTouchHandler,
+  Path,
+  Skia,
 } from "@shopify/react-native-skia";
 
+import { resizeImageInfoMake } from "../utils/painterHelper";
 const MAX_CANVAS_WIDTH = 1051;
 const MAX_CANVAS_HEIGHT = 759;
 
-const SkiaCanvas = ({ filePath }) => {
-  const loadImage = useImage(filePath);
-  let loadImageWidth;
-  let loadImageHeight;
-  let caculatedWidth;
-  let caculatedHeight;
-  let offsetX;
-  let offsetY;
-  console.log(loadImage);
+export const SkiaCanvas = ({ filePath, controller }) => {
+  const {
+    currentMode,
+    currentPenType,
+    currentPenColor,
+    handleCurrentMode,
+    handleCurrentPenColor,
+    handleCurrentPenType,
+  } = controller;
+  const touchState = useRef(false);
+  const currentPath = useRef(null);
+  const canvasRef = useRef(null);
+  const [completedPaths, setCompletedPaths] = useState([]);
 
-  if (loadImage) {
-    console.log("Load!!");
+  const loadImage = filePath ? useImage(filePath) : null;
+  const resizeImageInfo = loadImage
+    ? resizeImageInfoMake(loadImage, MAX_CANVAS_WIDTH, MAX_CANVAS_HEIGHT)
+    : null;
 
-    loadImageWidth = loadImage.width();
-    loadImageHeight = loadImage.height();
-    console.log(loadImageWidth);
-    console.log(loadImageHeight);
+  const cx = useValue(100);
+  const cy = useValue(100);
 
-    const widthRatio = loadImageWidth / MAX_CANVAS_WIDTH;
-    const heightRatio = loadImageHeight / MAX_CANVAS_HEIGHT;
+  const onDrawingStart = () => {
+    console.log("start");
+  };
 
-    caculatedWidth =
-      widthRatio > heightRatio
-        ? MAX_CANVAS_WIDTH
-        : (loadImageWidth * MAX_CANVAS_HEIGHT) / loadImageHeight;
+  const onDrawingActive = ({ x, y }) => {
+    cx.current = x;
+    cy.current = y;
+    console.log(x, y);
+  };
 
-    caculatedHeight =
-      widthRatio > heightRatio
-        ? (loadImageHeight * MAX_CANVAS_WIDTH) / loadImageWidth
-        : MAX_CANVAS_HEIGHT;
+  const onDrawingFinish = () => {
+    console.log("finish!");
+  };
 
-    offsetX = Math.floor((MAX_CANVAS_WIDTH - caculatedWidth) / 2);
-    offsetY = Math.floor((MAX_CANVAS_HEIGHT - caculatedHeight) / 2);
-  }
+  const touchHandler = useTouchHandler({
+    onStart: onDrawingStart,
+    onActive: onDrawingActive,
+    onEnd: onDrawingFinish,
+  });
 
   return (
-    <Canvas style={styles.canvas}>
-      {loadImage && (
-        <Image
-          image={loadImage}
-          fit="contain"
-          x={offsetX}
-          y={offsetY}
-          width={caculatedWidth}
-          height={caculatedHeight}
-        />
-      )}
-    </Canvas>
+    <Fragment>
+      <Canvas style={styles.canvas} onTouch={touchHandler} ref={canvasRef}>
+        {loadImage && (
+          <Image
+            image={loadImage}
+            fit="contain"
+            x={resizeImageInfo.offsetX}
+            y={resizeImageInfo.offsetY}
+            width={resizeImageInfo.caculatedWidth}
+            height={resizeImageInfo.caculatedHeight}
+          />
+        )}
+        <Circle cx={cx} cy={cy} r={10} color="red" />
+      </Canvas>
+    </Fragment>
   );
 };
-
-export default SkiaCanvas;
 
 const styles = StyleSheet.create({
   canvas: {

@@ -6,22 +6,28 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
 import ColorButtonItem from "../components/buttons/ColorButton";
 import { colorList } from "../constants/painterOptions";
-import SkiaCanvas from "../components/Canvas";
+import { SkiaCanvas } from "../components/Canvas";
 
 const PainterScreen = ({ route, navigation }) => {
   const [currentModal, setCurrentModal] = useState();
+  const [currentMode, setCurrentMode] = useState("draw");
   const [currentPenType, setCurrentPenType] = useState("grease-pencil");
   const [currentPenColor, setCurrentPenColor] = useState("black");
 
-  console.log(currentPenColor);
-  console.log("route.params", route.params);
   const filePath = route.params ? route.params.item.filePath : null;
-  console.log("filePath", filePath);
+  const controller = {
+    currentMode,
+    currentPenType,
+    currentPenColor,
+    handleCurrentMode: (mode) => setCurrentMode(mode),
+    handleCurrentPenColor: (penType) => setCurrentPenType(penType),
+    handleCurrentPenType: (penColor) => setCurrentPenColor(penColor),
+  };
 
   return (
     <Contatiner>
       <LeftMainView>
-        {filePath && <SkiaCanvas filePath={filePath ? filePath : null} />}
+        <SkiaCanvas filePath={filePath} controller={controller} />
       </LeftMainView>
       <RightControlView>
         <ButtonsView>
