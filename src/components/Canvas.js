@@ -20,7 +20,9 @@ export const SkiaCanvas = ({
   currentMode,
   currentPenColor,
   currentPenType,
+  prevElementsLengthList,
   handleCurrentElemets,
+  handlePrevElementsLengthList,
 }) => {
   const [isDrawing, setDrawing] = useState(false);
   const currentPath = useRef(null);
@@ -30,20 +32,12 @@ export const SkiaCanvas = ({
     ? resizeImageInfoMake(loadImage, MAX_CANVAS_WIDTH, MAX_CANVAS_HEIGHT)
     : null;
 
-  const pathMaker = (x, y) =>
-    createPath(x, y, currentPenColor, penSize[currentPenType], "normal");
-
-  console.log("outside", currentPenColor);
-  console.log("pensize", penSize[currentPenType]);
-
   const touchHandler = useTouchHandler(
     {
       onStart: ({ x, y }) => {
         if (isDrawing) return;
 
         setDrawing(true);
-        console.log("start");
-        console.log("onstart indsie1", currentPenColor);
         switch (currentMode) {
           case undefined:
           case "draw": {
@@ -115,14 +109,19 @@ export const SkiaCanvas = ({
       },
 
       onEnd: () => {
-        if (isDrawing) return;
-
         console.log("finish!");
         currentPath.current = null;
+        handlePrevElementsLengthList(currentElements.length);
         setDrawing(false);
       },
     },
-    [currentMode, currentPenType, currentPenColor],
+    [
+      currentMode,
+      currentPenType,
+      currentPenColor,
+      isDrawing,
+      prevElementsLengthList,
+    ],
   );
 
   const memoImage = useMemo(() => loadImage, [loadImage]);

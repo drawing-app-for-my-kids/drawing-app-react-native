@@ -14,6 +14,7 @@ const PainterScreen = ({ route, navigation }) => {
   const [currentPenType, setCurrentPenType] = useState("grease-pencil");
   const [currentPenColor, setCurrentPenColor] = useState("black");
   const [currentElements, setCurrentElements] = useState([]);
+  const [prevElementsLengthList, setPrevElementsLengthList] = useState([]);
 
   const filePath = route.params ? route.params.item.filePath : null;
 
@@ -22,13 +23,22 @@ const PainterScreen = ({ route, navigation }) => {
       return [...prevState, newElement];
     });
 
-  const handleRedo = () => {
-    console.log("redo!");
-    console.log(currentElements.length);
-    const redoElements = currentElements.slice(0, currentElements.length - 1);
-    console.log(redoElements.length);
-    setCurrentElements(redoElements);
+  const handlePrevElementsLengthList = (elementLength) => {
+    setPrevElementsLengthList([...prevElementsLengthList, elementLength]);
   };
+
+  const handleUndo = () => {
+    const redoElements = currentElements.slice(
+      0,
+      prevElementsLengthList[prevElementsLengthList.length - 1],
+    );
+    setCurrentElements(redoElements);
+    setPrevElementsLengthList(
+      prevElementsLengthList.slice(0, prevElementsLengthList.length - 1),
+    );
+  };
+
+  console.log(prevElementsLengthList);
 
   return (
     <Contatiner>
@@ -39,7 +49,9 @@ const PainterScreen = ({ route, navigation }) => {
           currentMode={currentMode}
           currentPenColor={currentPenColor}
           currentPenType={currentPenType}
+          prevElementsLengthList={prevElementsLengthList}
           handleCurrentElemets={handleCurrentElemets}
+          handlePrevElementsLengthList={handlePrevElementsLengthList}
         />
       </LeftMainView>
       <RightControlView>
@@ -81,7 +93,7 @@ const PainterScreen = ({ route, navigation }) => {
           <EraserPickerButton onPress={() => setCurrentMode(() => "erase")}>
             <MaterialCommunityIcons name="eraser" size={80} color="black" />
           </EraserPickerButton>
-          <UndoButton onPress={handleRedo}>
+          <UndoButton onPress={handleUndo}>
             <MaterialCommunityIcons
               name="undo-variant"
               size={80}
