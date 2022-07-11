@@ -16,20 +16,14 @@ const useTouchDrawing = () => {
   const pathMaker = (x, y) =>
     createPath(x, y, currentPenColor, penSize[currentPenType], "normal");
 
-  console.log(currentPenColor);
-
   return useTouchHandler({
     onStart: ({ x, y }) => {
       if (isDrawing) return;
 
-      console.log("start");
       setDrawing(true);
-      console.log("onstart indsie1", currentPenColor);
-      console.log("currentMode", currentMode);
       switch (currentMode) {
         case undefined:
         case "draw": {
-          console.log("onstart indsie2", currentPenColor);
           currentPath.current = pathMaker(x, y);
 
           break;
@@ -89,7 +83,6 @@ const useTouchDrawing = () => {
 
       switch (currentMode) {
         default:
-          console.log("finish!");
           currentPath.current = null;
           setDrawing(false);
           break;

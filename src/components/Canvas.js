@@ -41,7 +41,6 @@ export const SkiaCanvas = ({
         switch (currentMode) {
           case undefined:
           case "draw": {
-            console.log("onstart indsie2", currentPenColor);
             currentPath.current = createPath(
               x,
               y,
@@ -109,7 +108,6 @@ export const SkiaCanvas = ({
       },
 
       onEnd: () => {
-        console.log("finish!");
         currentPath.current = null;
         handlePrevElementsLengthList(currentElements.length);
         setDrawing(false);

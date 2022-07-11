@@ -5,7 +5,6 @@ import { Alert, StyleSheet, Image } from "react-native";
 const PictureItem = ({ navigation, item, uri, notebookId }) => (
   <NoteBookCard
     onPress={() => {
-      // console.log(item);
       navigation.navigate("Painter", {
         notebookId,
         item,

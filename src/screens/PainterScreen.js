@@ -38,8 +38,6 @@ const PainterScreen = ({ route, navigation }) => {
     );
   };
 
-  console.log(prevElementsLengthList);
-
   return (
     <Contatiner>
       <LeftMainView>
