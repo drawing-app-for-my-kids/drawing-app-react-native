@@ -136,10 +136,10 @@ export const colorList = [
 
 export const penSize = {
   "lead-pencil": 1,
-  "grease-pencil": 3,
-  brush: 5,
-  "format-paint": 7,
-  spray: 9,
+  "grease-pencil": 5,
+  brush: 9,
+  "format-paint": 13,
+  spray: 17,
 };
 
 export const penType = [];

@@ -22,6 +22,14 @@ const PainterScreen = ({ route, navigation }) => {
       return [...prevState, newElement];
     });
 
+  const handleRedo = () => {
+    console.log("redo!");
+    console.log(currentElements.length);
+    const redoElements = currentElements.slice(0, currentElements.length - 1);
+    console.log(redoElements.length);
+    setCurrentElements(redoElements);
+  };
+
   return (
     <Contatiner>
       <LeftMainView>
@@ -73,7 +81,7 @@ const PainterScreen = ({ route, navigation }) => {
           <EraserPickerButton onPress={() => setCurrentMode(() => "erase")}>
             <MaterialCommunityIcons name="eraser" size={80} color="black" />
           </EraserPickerButton>
-          <UndoButton onPress={() => Alert.alert("언두")}>
+          <UndoButton onPress={handleRedo}>
             <MaterialCommunityIcons
               name="undo-variant"
               size={80}

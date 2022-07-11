@@ -1,4 +1,4 @@
-import React, { useState, useRef, Fragment, useMemo } from "react";
+import React, { useState, useRef, Fragment, useMemo, useEffect } from "react";
 import { StyleSheet } from "react-native";
 import {
   Canvas,
@@ -34,84 +34,96 @@ export const SkiaCanvas = ({
     createPath(x, y, currentPenColor, penSize[currentPenType], "normal");
 
   console.log("outside", currentPenColor);
+  console.log("pensize", penSize[currentPenType]);
 
-  const touchHandler = useTouchHandler({
-    onStart: ({ x, y }) => {
-      if (isDrawing) return;
+  const touchHandler = useTouchHandler(
+    {
+      onStart: ({ x, y }) => {
+        if (isDrawing) return;
 
-      setDrawing(true);
-      console.log("start");
-      console.log("onstart indsie1", currentPenColor);
-      switch (currentMode) {
-        case undefined:
-        case "draw": {
-          console.log("onstart indsie2", currentPenColor);
-          currentPath.current = pathMaker(x, y);
+        setDrawing(true);
+        console.log("start");
+        console.log("onstart indsie1", currentPenColor);
+        switch (currentMode) {
+          case undefined:
+          case "draw": {
+            console.log("onstart indsie2", currentPenColor);
+            currentPath.current = createPath(
+              x,
+              y,
+              currentPenColor,
+              penSize[currentPenType],
+              "normal",
+            );
 
-          break;
+            break;
+          }
+          case "erase": {
+            currentPath.current = createPath(
+              x,
+              y,
+              currentPenColor,
+              penSize[currentPenType],
+              "normal",
+            );
+
+            break;
+          }
+          default:
+            break;
         }
-        case "erase": {
-          currentPath.current = pathMaker();
+        prevPointRef.current = { x, y };
+      },
 
-          break;
+      onActive: ({ x, y }) => {
+        switch (currentMode) {
+          case undefined:
+          case "draw": {
+            const xMid = (prevPointRef.current.x + x) / 2;
+            const yMid = (prevPointRef.current.y + y) / 2;
+            currentPath.current.path.quadTo(
+              prevPointRef.current.x,
+              prevPointRef.current.y,
+              xMid,
+              yMid,
+            );
+
+            handleCurrentElemets(currentPath.current);
+
+            break;
+          }
+
+          case "erase": {
+            const xMid = (prevPointRef.current.x + x) / 2;
+            const yMid = (prevPointRef.current.y + y) / 2;
+            currentPath.current.quadTo(
+              prevPointRef.current.x,
+              prevPointRef.current.y,
+              xMid,
+              yMid,
+            );
+
+            handleCurrentElemets(currentPath.current);
+
+            break;
+          }
+
+          default:
+            break;
         }
-        default:
-          break;
-      }
-      prevPointRef.current = { x, y };
+        prevPointRef.current = { x, y };
+      },
+
+      onEnd: () => {
+        if (isDrawing) return;
+
+        console.log("finish!");
+        currentPath.current = null;
+        setDrawing(false);
+      },
     },
-
-    onActive: ({ x, y }) => {
-      switch (currentMode) {
-        case undefined:
-        case "draw": {
-          const xMid = (prevPointRef.current.x + x) / 2;
-          const yMid = (prevPointRef.current.y + y) / 2;
-          currentPath.current.path.quadTo(
-            prevPointRef.current.x,
-            prevPointRef.current.y,
-            xMid,
-            yMid,
-          );
-
-          handleCurrentElemets(currentPath.current);
-
-          break;
-        }
-
-        case "erase": {
-          const xMid = (prevPointRef.current.x + x) / 2;
-          const yMid = (prevPointRef.current.y + y) / 2;
-          currentPath.current.quadTo(
-            prevPointRef.current.x,
-            prevPointRef.current.y,
-            xMid,
-            yMid,
-          );
-
-          handleCurrentElemets(currentPath.current);
-
-          break;
-        }
-
-        default:
-          break;
-      }
-      prevPointRef.current = { x, y };
-    },
-
-    onEnd: () => {
-      if (!isDrawing) return;
-
-      switch (currentMode) {
-        default:
-          console.log("finish!");
-          currentPath.current = null;
-          setDrawing(false);
-          break;
-      }
-    },
-  });
+    [currentMode, currentPenType, currentPenColor],
+  );
 
   const memoImage = useMemo(() => loadImage, [loadImage]);
 
