@@ -1,45 +1,117 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  Fragment,
-  useMemo,
-} from "react";
+import React, { useState, useRef, Fragment, useMemo } from "react";
 import { StyleSheet } from "react-native";
+import {
+  Canvas,
+  useImage,
+  Image,
+  Path,
+  useTouchHandler,
+} from "@shopify/react-native-skia";
 
-import { Canvas, useImage, Image, Path } from "@shopify/react-native-skia";
-
-import { resizeImageInfoMake } from "../utils/painterHelper";
-import useTouchDrawing from "../hooks/useTouchDrawing";
+import { penSize } from "../constants/painterOptions";
+import { resizeImageInfoMake, createPath } from "../utils/painterHelper";
 
 const MAX_CANVAS_WIDTH = 1051;
 const MAX_CANVAS_HEIGHT = 759;
 
 export const SkiaCanvas = ({
   filePath,
+  currentElements,
   currentMode,
   currentPenColor,
   currentPenType,
-  currentElements,
   handleCurrentElemets,
 }) => {
-  console.log("canvas", currentMode);
-  console.log("canvas", currentPenColor);
-  console.log("canvas", currentPenType);
-
-  const canvasRef = useRef(null);
+  const [isDrawing, setDrawing] = useState(false);
+  const currentPath = useRef(null);
+  const prevPointRef = useRef(null);
   const loadImage = filePath ? useImage(filePath) : null;
   const resizeImageInfo = loadImage
     ? resizeImageInfoMake(loadImage, MAX_CANVAS_WIDTH, MAX_CANVAS_HEIGHT)
     : null;
 
-  const touchHandler = useTouchDrawing(
-    currentMode,
-    currentPenColor,
-    currentPenType,
-    handleCurrentElemets,
-  );
+  const pathMaker = (x, y) =>
+    createPath(x, y, currentPenColor, penSize[currentPenType], "normal");
+
+  console.log("outside", currentPenColor);
+
+  const touchHandler = useTouchHandler({
+    onStart: ({ x, y }) => {
+      if (isDrawing) return;
+
+      setDrawing(true);
+      console.log("start");
+      console.log("onstart indsie1", currentPenColor);
+      switch (currentMode) {
+        case undefined:
+        case "draw": {
+          console.log("onstart indsie2", currentPenColor);
+          currentPath.current = pathMaker(x, y);
+
+          break;
+        }
+        case "erase": {
+          currentPath.current = pathMaker();
+
+          break;
+        }
+        default:
+          break;
+      }
+      prevPointRef.current = { x, y };
+    },
+
+    onActive: ({ x, y }) => {
+      switch (currentMode) {
+        case undefined:
+        case "draw": {
+          const xMid = (prevPointRef.current.x + x) / 2;
+          const yMid = (prevPointRef.current.y + y) / 2;
+          currentPath.current.path.quadTo(
+            prevPointRef.current.x,
+            prevPointRef.current.y,
+            xMid,
+            yMid,
+          );
+
+          handleCurrentElemets(currentPath.current);
+
+          break;
+        }
+
+        case "erase": {
+          const xMid = (prevPointRef.current.x + x) / 2;
+          const yMid = (prevPointRef.current.y + y) / 2;
+          currentPath.current.quadTo(
+            prevPointRef.current.x,
+            prevPointRef.current.y,
+            xMid,
+            yMid,
+          );
+
+          handleCurrentElemets(currentPath.current);
+
+          break;
+        }
+
+        default:
+          break;
+      }
+      prevPointRef.current = { x, y };
+    },
+
+    onEnd: () => {
+      if (!isDrawing) return;
+
+      switch (currentMode) {
+        default:
+          console.log("finish!");
+          currentPath.current = null;
+          setDrawing(false);
+          break;
+      }
+    },
+  });
 
   const memoImage = useMemo(() => loadImage, [loadImage]);
 
@@ -72,7 +144,7 @@ export const SkiaCanvas = ({
 
   return (
     <Fragment>
-      <Canvas style={styles.canvas} onTouch={touchHandler} ref={canvasRef}>
+      <Canvas style={styles.canvas} onTouch={touchHandler}>
         {loadImage && (
           <Image
             image={memoImage}

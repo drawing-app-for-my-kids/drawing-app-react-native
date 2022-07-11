@@ -1,52 +1,41 @@
-import React, { useRef } from "react";
+import { useRef, useState, useContext } from "react";
 import { useTouchHandler } from "@shopify/react-native-skia";
 
 import { penSize } from "../constants/painterOptions";
 import { createPath } from "../utils/painterHelper";
+import { PainterContext } from "../screens/PainterScreen";
 
-const useTouchDrawing = (
-  currentMode,
-  currentPenColor,
-  currentPenType,
-  handleCurrentElemets,
-) => {
-  const touchState = useRef(false);
+const useTouchDrawing = () => {
+  const [isDrawing, setDrawing] = useState(false);
   const currentPath = useRef(null);
   const prevPointRef = useRef(null);
 
-  console.log("hooks inside color", currentPenColor);
-  console.log("hooks inside pen type", currentPenType);
+  const { currentMode, currentPenColor, currentPenType, handleCurrentElemets } =
+    useContext(PainterContext);
+
+  const pathMaker = (x, y) =>
+    createPath(x, y, currentPenColor, penSize[currentPenType], "normal");
+
+  console.log(currentPenColor);
 
   return useTouchHandler({
     onStart: ({ x, y }) => {
-      if (touchState.current) return;
+      if (isDrawing) return;
 
       console.log("start");
-      touchState.current = true;
+      setDrawing(true);
       console.log("onstart indsie1", currentPenColor);
-
+      console.log("currentMode", currentMode);
       switch (currentMode) {
         case undefined:
         case "draw": {
           console.log("onstart indsie2", currentPenColor);
-          currentPath.current = createPath(
-            x,
-            y,
-            currentPenColor,
-            penSize[currentPenType],
-            "normal",
-          );
+          currentPath.current = pathMaker(x, y);
 
           break;
         }
         case "erase": {
-          currentPath.current = createPath(
-            x,
-            y,
-            currentPenColor,
-            penSize[currentPenType],
-            "normal",
-          );
+          currentPath.current = pathMaker();
 
           break;
         }
@@ -96,13 +85,13 @@ const useTouchDrawing = (
     },
 
     onEnd: () => {
-      if (!touchState.current) return;
+      if (!isDrawing) return;
 
       switch (currentMode) {
         default:
           console.log("finish!");
           currentPath.current = null;
-          touchState.current = false;
+          setDrawing(false);
           break;
       }
     },
