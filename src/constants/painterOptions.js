@@ -134,6 +134,12 @@ export const colorList = [
   "darkmagenta",
 ];
 
-export const penSize = [];
+export const penSize = {
+  "lead-pencil": 1,
+  "grease-pencil": 3,
+  brush: 5,
+  "format-paint": 7,
+  spray: 9,
+};
 
 export const penType = [];

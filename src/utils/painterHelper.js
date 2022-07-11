@@ -3,6 +3,21 @@
 // 펜의 타입을 정한다.
 // 펜의 색깔을 정한다.
 
+// 그리기
+import { Skia } from "@shopify/react-native-skia";
+
+export const createPath = (x, y, color, size, pathType) => {
+  const path = Skia.Path.Make();
+  path.moveTo(x, y);
+  return {
+    type: "path",
+    path,
+    color,
+    size,
+    pathType,
+  };
+};
+
 // 지우개 기능
 // 언두 기능
 
@@ -18,12 +33,8 @@ export const resizeImageInfoMake = (
 ) => {
   const resizeImageInfo = {};
 
-  console.log("Load!!");
-
   const loadImageWidth = loadImage.width();
   const loadImageHeight = loadImage.height();
-  console.log("loadImageWidth", loadImageWidth);
-  console.log("loadImageHeight", loadImageHeight);
 
   const widthRatio = loadImageWidth / MAX_CANVAS_WIDTH;
   const heightRatio = loadImageHeight / MAX_CANVAS_HEIGHT;

@@ -164,3 +164,41 @@ export const exampleUri = require("../constants/pictures/1.png");
 
 export const exampleUrl =
   "https://mblogthumb-phinf.pstatic.net/20160817_259/retspe_14714118890125sC2j_PNG/%C7%C7%C4%AB%C3%F2_%281%29.png?type=w800";
+
+export const tempCanvasElements = [
+  {
+    type: "path",
+    path: "M 128 0 L 168 80 Z",
+    color: "black",
+    size: 3,
+    pathType: "normal",
+  },
+  {
+    type: "path",
+    path: "M 322 0 L 168 80 Z",
+    color: "black",
+    size: 3,
+    pathType: "normal",
+  },
+  {
+    type: "path",
+    path: "M 222 0 L 168 80 Z",
+    color: "black",
+    size: 3,
+    pathType: "normal",
+  },
+  {
+    type: "path",
+    path: "M 422 0 L 168 80 Z",
+    color: "black",
+    size: 3,
+    pathType: "normal",
+  },
+  {
+    type: "path",
+    path: "M 622 0 L 168 80 Z",
+    color: "black",
+    size: 3,
+    pathType: "normal",
+  },
+];

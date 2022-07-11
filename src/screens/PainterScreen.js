@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState, useRef } from "react";
+import React, { useState } from "react";
 import styled from "styled-components/native";
 import { View, StyleSheet, Alert, Pressable, FlatList } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -13,21 +13,26 @@ const PainterScreen = ({ route, navigation }) => {
   const [currentMode, setCurrentMode] = useState("draw");
   const [currentPenType, setCurrentPenType] = useState("grease-pencil");
   const [currentPenColor, setCurrentPenColor] = useState("black");
+  const [currentElements, setCurrentElements] = useState([]);
 
   const filePath = route.params ? route.params.item.filePath : null;
-  const controller = {
-    currentMode,
-    currentPenType,
-    currentPenColor,
-    handleCurrentMode: (mode) => setCurrentMode(mode),
-    handleCurrentPenColor: (penType) => setCurrentPenType(penType),
-    handleCurrentPenType: (penColor) => setCurrentPenColor(penColor),
-  };
+
+  const handleCurrentElemets = (newElement) =>
+    setCurrentElements((prevState) => {
+      return [...prevState, newElement];
+    });
 
   return (
     <Contatiner>
       <LeftMainView>
-        <SkiaCanvas filePath={filePath} controller={controller} />
+        <SkiaCanvas
+          filePath={filePath}
+          currentMode={currentMode}
+          currentPenColor={currentPenColor}
+          currentPenType={currentPenType}
+          handleCurrentElemets={handleCurrentElemets}
+          currentElements={currentElements}
+        />
       </LeftMainView>
       <RightControlView>
         <ButtonsView>
@@ -40,6 +45,7 @@ const PainterScreen = ({ route, navigation }) => {
           </LoadPictureButton>
           <PenPickerButton
             onPress={() => {
+              setCurrentMode("draw");
               !currentModal
                 ? setCurrentModal("penModal")
                 : setCurrentModal(null);
@@ -64,7 +70,7 @@ const PainterScreen = ({ route, navigation }) => {
               }}
             />
           </ColorPickerButton>
-          <EraserPickerButton onPress={() => Alert.alert("지우개")}>
+          <EraserPickerButton onPress={() => setCurrentMode("erase")}>
             <MaterialCommunityIcons name="eraser" size={80} color="black" />
           </EraserPickerButton>
           <UndoButton onPress={() => Alert.alert("언두")}>
@@ -304,9 +310,6 @@ const PenModalTextBox = styled.Pressable`
   align-items: center;
   justify-content: center;
 `;
-
-const PenModalText = styled.Text``;
-const ColorModalText = styled.Text``;
 
 const ModalCloseButton = styled(Pressable)`
   align-self: flex-end;
