@@ -27,7 +27,7 @@ export const folderPathMaker = (folderName) => {
 export const readDirectoryFromDocumentDirectory = async (folderName = "") => {
   try {
     const result = await FileSystem.readDirectoryAsync(
-      documentDirectory + folderName
+      documentDirectory + folderName,
     );
     console.log("Return is", result);
   } catch (error) {
@@ -49,7 +49,7 @@ export const makeNotebooksDirectoryToFileSystem = async () => {
 export const makeDirectoryToFileSystem = async (folderName) => {
   try {
     const result = await FileSystem.getInfoAsync(
-      FileSystem.documentDirectory + "notebooks/" + folderName
+      FileSystem.documentDirectory + "notebooks/" + folderName,
     );
 
     if (!result.exists) {
@@ -57,7 +57,7 @@ export const makeDirectoryToFileSystem = async (folderName) => {
         documentDirectory + "notebooks/" + folderName,
         {
           intermediates: true,
-        }
+        },
       );
       console.log("폴더 생성 성공");
       return;
@@ -110,11 +110,11 @@ export const readTemporaryImageFile = async () => {
 // 복사 로컬 파일
 
 export const copyPhotoAlbumImageFileToCacheDirectory = async (
-  orginalImageUri
+  orginalImageUri,
 ) => {
   try {
     const temporaryImageFile = await FileSystem.getInfoAsync(
-      temporaryPictureUri
+      temporaryPictureUri,
     );
 
     if (temporaryImageFile.exists) {
@@ -190,7 +190,7 @@ export const deleteTemporaryImage = async () => {
 export const downloadTemporaryImageToCacheDirectory = async (url) => {
   try {
     const temporaryImageFile = await FileSystem.getInfoAsync(
-      temporaryPictureUri
+      temporaryPictureUri,
     );
 
     if (temporaryImageFile.exists) {

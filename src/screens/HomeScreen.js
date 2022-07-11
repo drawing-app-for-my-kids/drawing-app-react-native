@@ -35,7 +35,7 @@ const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     initializingApp(setNoteBookList);
-  }, []);
+  }, [setNoteBookList]);
 
   return (
     <Contatiner>
@@ -58,7 +58,11 @@ const HomeScreen = ({ navigation }) => {
             numColumns={6}
           />
         ) : (
-          <Text style={{ paddingLeft: 20, fontSize: 20 }}>
+          <Text
+            style={{
+              paddingLeft: 20,
+              fontSize: 20,
+            }}>
             노트북 목록이 없습니다.
           </Text>
         )}

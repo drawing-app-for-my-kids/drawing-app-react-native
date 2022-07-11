@@ -1,81 +1,100 @@
-import React, { useEffect, useLayoutEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components/native";
 import { View, StyleSheet, Alert, Pressable, FlatList } from "react-native";
-import Canvas, { Image as CanvasImage } from "react-native-canvas";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
 import ColorButtonItem from "../components/buttons/ColorButton";
 import { colorList } from "../constants/painterOptions";
+import { SkiaCanvas } from "../components/Canvas";
+import { useCanvasRef } from "@shopify/react-native-skia";
+import { makeImageFile } from "../utils/fileSystemHelper";
+import { saveFileToCameraRoll } from "../utils/cameraRollHelper";
 
 const PainterScreen = ({ route, navigation }) => {
   const [currentModal, setCurrentModal] = useState();
+  const [currentMode, setCurrentMode] = useState("draw");
   const [currentPenType, setCurrentPenType] = useState("grease-pencil");
   const [currentPenColor, setCurrentPenColor] = useState("black");
-  const ref = useRef(null);
-  const MAX_CANVAS_WIDTH = 1051;
-  const MAX_CANVAS_HEIGHT = 759;
-
-  // console.log("route.params", route.params);
+  const [currentElements, setCurrentElements] = useState([]);
+  const [prevElementsLengthList, setPrevElementsLengthList] = useState([]);
+  const canvasRef = useCanvasRef();
 
   const filePath = route.params ? route.params.item.filePath : null;
-  // console.log(filePath);
 
-  useEffect(() => {
-    if (ref.current) {
-      const ctx = ref.current.getContext("2d");
-      const canvas = ref.current;
-      canvas.width = 1051;
-      canvas.height = 759;
+  const handleCurrentElemets = (newElement) =>
+    setCurrentElements((prevState) => {
+      return [...prevState, newElement];
+    });
 
-      if (filePath) {
-        let img = new CanvasImage(canvas);
-        img.src = `${filePath}`;
+  const handlePrevElementsLengthList = (elementLength) => {
+    setPrevElementsLengthList([...prevElementsLengthList, elementLength]);
+  };
 
-        img.addEventListener("load", () => {
-          console.log("Load!!");
-          const widthRatio = img.width / MAX_CANVAS_WIDTH;
-          const heightRatio = img.height / MAX_CANVAS_HEIGHT;
+  const handleUndo = () => {
+    const redoElements = currentElements.slice(
+      0,
+      prevElementsLengthList[prevElementsLengthList.length - 1],
+    );
+    setCurrentElements(redoElements);
+    setPrevElementsLengthList(
+      prevElementsLengthList.slice(0, prevElementsLengthList.length - 1),
+    );
+  };
 
-          const width =
-            widthRatio > heightRatio
-              ? MAX_CANVAS_WIDTH
-              : (img.width * MAX_CANVAS_HEIGHT) / img.height;
-
-          const height =
-            widthRatio > heightRatio
-              ? (img.height * MAX_CANVAS_WIDTH) / img.width
-              : MAX_CANVAS_HEIGHT;
-
-          const offsetX = Math.floor((MAX_CANVAS_WIDTH - width) / 2);
-          const offsetY = Math.floor((MAX_CANVAS_HEIGHT - height) / 2);
-
-          ctx.drawImage(img, offsetX, offsetY, width, height);
-        });
-      }
+  const handleSave = async () => {
+    const image = canvasRef.current.makeImageSnapshot();
+    if (image) {
+      const base64File = image.encodeToBase64();
+      await makeImageFile(filePath, base64File);
     }
-  }, [ref]);
+  };
+
+  const handleSaveToCameraRoll = async () => {
+    const image = canvasRef.current.makeImageSnapshot();
+    if (image) {
+      const base64File = image.encodeToBase64();
+      await makeImageFile(filePath, base64File);
+      await saveFileToCameraRoll(filePath);
+    }
+  };
 
   return (
     <Contatiner>
       <LeftMainView>
-        <CanvasView>
-          <Canvas ref={ref} style={styles.canvas} />
-        </CanvasView>
+        <SkiaCanvas
+          ref={canvasRef}
+          filePath={filePath}
+          currentElements={currentElements}
+          currentMode={currentMode}
+          currentPenColor={currentPenColor}
+          currentPenType={currentPenType}
+          prevElementsLengthList={prevElementsLengthList}
+          handleCurrentElemets={handleCurrentElemets}
+          handlePrevElementsLengthList={handlePrevElementsLengthList}
+        />
       </LeftMainView>
       <RightControlView>
         <ButtonsView>
-          <NewPictureButton onPress={() => Alert.alert("파일 저장")}>
+          <NewPictureButton
+            onPress={async () => {
+              await handleSave();
+              navigation.goBack();
+            }}>
             <MaterialIcons name="save" size={80} color="black" />
           </NewPictureButton>
           <LoadPictureButton
-            onPress={() => Alert.alert("카메라 이미지로 저장")}>
+            onPress={async () => {
+              await handleSaveToCameraRoll();
+              navigation.goBack();
+            }}>
             <MaterialCommunityIcons name="camera" size={80} color="black" />
           </LoadPictureButton>
           <PenPickerButton
             onPress={() => {
+              setCurrentMode(() => "draw");
               !currentModal
-                ? setCurrentModal("penModal")
+                ? setCurrentModal(() => "penModal")
                 : setCurrentModal(null);
             }}>
             <MaterialCommunityIcons
@@ -87,7 +106,7 @@ const PainterScreen = ({ route, navigation }) => {
           <ColorPickerButton
             onPress={() => {
               !currentModal
-                ? setCurrentModal("colorModal")
+                ? setCurrentModal(() => "colorModal")
                 : setCurrentModal(null);
             }}>
             <MaterialIcons name="color-lens" size={80} color="black" />
@@ -98,10 +117,10 @@ const PainterScreen = ({ route, navigation }) => {
               }}
             />
           </ColorPickerButton>
-          <EraserPickerButton onPress={() => Alert.alert("지우개")}>
+          <EraserPickerButton onPress={() => setCurrentMode(() => "erase")}>
             <MaterialCommunityIcons name="eraser" size={80} color="black" />
           </EraserPickerButton>
-          <UndoButton onPress={() => Alert.alert("언두")}>
+          <UndoButton onPress={handleUndo}>
             <MaterialCommunityIcons
               name="undo-variant"
               size={80}
@@ -129,7 +148,7 @@ const PainterScreen = ({ route, navigation }) => {
                 <PenModalTextBox
                   onPress={() => {
                     setCurrentModal(null);
-                    setCurrentPenType("lead-pencil");
+                    setCurrentPenType(() => "lead-pencil");
                   }}>
                   <MaterialCommunityIcons
                     name="lead-pencil"
@@ -140,7 +159,7 @@ const PainterScreen = ({ route, navigation }) => {
                 <PenModalTextBox
                   onPress={() => {
                     setCurrentModal(null);
-                    setCurrentPenType("grease-pencil");
+                    setCurrentPenType(() => "grease-pencil");
                   }}>
                   <MaterialCommunityIcons
                     name="grease-pencil"
@@ -151,7 +170,7 @@ const PainterScreen = ({ route, navigation }) => {
                 <PenModalTextBox
                   onPress={() => {
                     setCurrentModal(null);
-                    setCurrentPenType("brush");
+                    setCurrentPenType(() => "brush");
                   }}>
                   <MaterialCommunityIcons
                     name="brush"
@@ -162,7 +181,7 @@ const PainterScreen = ({ route, navigation }) => {
                 <PenModalTextBox
                   onPress={() => {
                     setCurrentModal(null);
-                    setCurrentPenType("format-paint");
+                    setCurrentPenType(() => "format-paint");
                   }}>
                   <MaterialCommunityIcons
                     name="format-paint"
@@ -173,7 +192,7 @@ const PainterScreen = ({ route, navigation }) => {
                 <PenModalTextBox
                   onPress={() => {
                     setCurrentModal(null);
-                    setCurrentPenType("spray");
+                    setCurrentPenType(() => "spray");
                   }}>
                   <MaterialCommunityIcons
                     name="spray"
@@ -182,7 +201,7 @@ const PainterScreen = ({ route, navigation }) => {
                   />
                 </PenModalTextBox>
               </PenModalView>
-              <ModalCloseButton onPress={() => setCurrentModal(null)}>
+              <ModalCloseButton onPress={() => setCurrentModal(() => null)}>
                 <Feather name="x-circle" size={24} color="black" />
               </ModalCloseButton>
             </View>
@@ -193,7 +212,7 @@ const PainterScreen = ({ route, navigation }) => {
           transparent={true}
           visible={currentModal === "colorModal"}
           onRequestClose={() => {
-            setCurrentModal(null);
+            setCurrentModal(() => null);
           }}>
           <View style={styles.colorCenteredView}>
             <View style={styles.colorModalView}>
@@ -203,8 +222,8 @@ const PainterScreen = ({ route, navigation }) => {
                   <ColorButtonItem
                     color={item}
                     PressHandler={(color) => {
-                      setCurrentPenColor(color);
-                      setCurrentModal(null);
+                      setCurrentPenColor(() => color);
+                      setCurrentModal(() => null);
                     }}
                   />
                 )}
@@ -212,7 +231,7 @@ const PainterScreen = ({ route, navigation }) => {
                 numColumns={7}
                 style={{ width: 400, height: 400 }}
               />
-              <ModalCloseButton onPress={() => setCurrentModal(null)}>
+              <ModalCloseButton onPress={() => setCurrentModal(() => null)}>
                 <Feather name="x-circle" size={24} color="black" />
               </ModalCloseButton>
             </View>
@@ -289,13 +308,6 @@ const LeftMainView = styled.View`
   width: 88%;
   height: 100%;
   display: flex;
-  background-color: white;
-`;
-
-const CanvasView = styled.View`
-  width: 100%;
-  height: 100%;
-  display: flex;
 `;
 
 const RightControlView = styled.View`
@@ -345,9 +357,6 @@ const PenModalTextBox = styled.Pressable`
   align-items: center;
   justify-content: center;
 `;
-
-const PenModalText = styled.Text``;
-const ColorModalText = styled.Text``;
 
 const ModalCloseButton = styled(Pressable)`
   align-self: flex-end;

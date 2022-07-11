@@ -18,7 +18,7 @@ const NoteBookScreen = ({ route, navigation }) => {
   const { _id: notebookId, noteBookTitle } = route.params;
 
   useEffect(() => {
-    const execute = async () => {
+    const showNotebookPictures = async () => {
       setLoading(true);
       const notebooks = await getItemFromAsyncStorage("Notes");
       const targetNotebook = notebooks.find(
@@ -28,8 +28,8 @@ const NoteBookScreen = ({ route, navigation }) => {
       setLoading(false);
     };
 
-    execute();
-  }, [isFocused]);
+    showNotebookPictures();
+  }, [isFocused, notebookId]);
 
   return (
     <Contatiner>
