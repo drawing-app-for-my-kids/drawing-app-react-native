@@ -7,6 +7,8 @@ install! 'cocoapods', :deterministic_uuids => false
 
 target 'drawing' do
   use_expo_modules!
+  pod 'react-native-cameraroll', :path => '../node_modules/@react-native-community/cameraroll'
+
   post_integrate do |installer|
     begin
       expo_patch_react_imports!(installer)

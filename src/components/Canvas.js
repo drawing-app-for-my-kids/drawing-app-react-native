@@ -1,4 +1,4 @@
-import React, { useState, useRef, Fragment, useMemo, useEffect } from "react";
+import React, { useState, useRef, Fragment, useMemo, forwardRef } from "react";
 import { StyleSheet } from "react-native";
 import {
   Canvas,
@@ -14,16 +14,19 @@ import { resizeImageInfoMake, createPath } from "../utils/painterHelper";
 const MAX_CANVAS_WIDTH = 1051;
 const MAX_CANVAS_HEIGHT = 759;
 
-export const SkiaCanvas = ({
-  filePath,
-  currentElements,
-  currentMode,
-  currentPenColor,
-  currentPenType,
-  prevElementsLengthList,
-  handleCurrentElemets,
-  handlePrevElementsLengthList,
-}) => {
+const SCanvas = (
+  {
+    filePath,
+    currentElements,
+    currentMode,
+    currentPenColor,
+    currentPenType,
+    prevElementsLengthList,
+    handleCurrentElemets,
+    handlePrevElementsLengthList,
+  },
+  ref,
+) => {
   const [isDrawing, setDrawing] = useState(false);
   const currentPath = useRef(null);
   const prevPointRef = useRef(null);
@@ -153,7 +156,7 @@ export const SkiaCanvas = ({
 
   return (
     <Fragment>
-      <Canvas style={styles.canvas} onTouch={touchHandler}>
+      <Canvas style={styles.canvas} onTouch={touchHandler} ref={ref}>
         {loadImage && (
           <Image
             image={memoImage}
@@ -169,6 +172,8 @@ export const SkiaCanvas = ({
     </Fragment>
   );
 };
+
+export const SkiaCanvas = forwardRef(SCanvas);
 
 const styles = StyleSheet.create({
   canvas: {

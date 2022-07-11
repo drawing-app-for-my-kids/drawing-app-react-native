@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components/native";
 import { View, StyleSheet, Alert, Pressable, FlatList } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -7,6 +7,9 @@ import Feather from "@expo/vector-icons/Feather";
 import ColorButtonItem from "../components/buttons/ColorButton";
 import { colorList } from "../constants/painterOptions";
 import { SkiaCanvas } from "../components/Canvas";
+import { useCanvasRef } from "@shopify/react-native-skia";
+import { makeImageFile } from "../utils/fileSystemHelper";
+import { saveFileToCameraRoll } from "../utils/cameraRollHelper";
 
 const PainterScreen = ({ route, navigation }) => {
   const [currentModal, setCurrentModal] = useState();
@@ -15,6 +18,7 @@ const PainterScreen = ({ route, navigation }) => {
   const [currentPenColor, setCurrentPenColor] = useState("black");
   const [currentElements, setCurrentElements] = useState([]);
   const [prevElementsLengthList, setPrevElementsLengthList] = useState([]);
+  const canvasRef = useCanvasRef();
 
   const filePath = route.params ? route.params.item.filePath : null;
 
@@ -38,10 +42,28 @@ const PainterScreen = ({ route, navigation }) => {
     );
   };
 
+  const handleSave = async () => {
+    const image = canvasRef.current.makeImageSnapshot();
+    if (image) {
+      const base64File = image.encodeToBase64();
+      await makeImageFile(filePath, base64File);
+    }
+  };
+
+  const handleSaveToCameraRoll = async () => {
+    const image = canvasRef.current.makeImageSnapshot();
+    if (image) {
+      const base64File = image.encodeToBase64();
+      await makeImageFile(filePath, base64File);
+      await saveFileToCameraRoll(filePath);
+    }
+  };
+
   return (
     <Contatiner>
       <LeftMainView>
         <SkiaCanvas
+          ref={canvasRef}
           filePath={filePath}
           currentElements={currentElements}
           currentMode={currentMode}
@@ -54,11 +76,18 @@ const PainterScreen = ({ route, navigation }) => {
       </LeftMainView>
       <RightControlView>
         <ButtonsView>
-          <NewPictureButton onPress={() => Alert.alert("파일 저장")}>
+          <NewPictureButton
+            onPress={async () => {
+              await handleSave();
+              navigation.goBack();
+            }}>
             <MaterialIcons name="save" size={80} color="black" />
           </NewPictureButton>
           <LoadPictureButton
-            onPress={() => Alert.alert("카메라 이미지로 저장")}>
+            onPress={async () => {
+              await handleSaveToCameraRoll();
+              navigation.goBack();
+            }}>
             <MaterialCommunityIcons name="camera" size={80} color="black" />
           </LoadPictureButton>
           <PenPickerButton
