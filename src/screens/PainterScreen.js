@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components/native";
-import { View, StyleSheet, Alert, Pressable, FlatList } from "react-native";
+import { View, StyleSheet, Text, Pressable, FlatList } from "react-native";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
@@ -8,8 +9,13 @@ import ColorButtonItem from "../components/buttons/ColorButton";
 import { colorList } from "../constants/painterOptions";
 import { SkiaCanvas } from "../components/Canvas";
 import { useCanvasRef } from "@shopify/react-native-skia";
-import { makeImageFile } from "../utils/fileSystemHelper";
+import {
+  makeImageFile,
+  deletePathFromDocumentDirectory,
+} from "../utils/fileSystemHelper";
 import { saveFileToCameraRoll } from "../utils/cameraRollHelper";
+import { deletePictureFromNotebook } from "../store/actions/noteBookActions";
+import { dispatchNotes } from "../store/index";
 
 const PainterScreen = ({ route, navigation }) => {
   const [currentModal, setCurrentModal] = useState();
@@ -21,6 +27,11 @@ const PainterScreen = ({ route, navigation }) => {
   const canvasRef = useCanvasRef();
 
   const filePath = route.params ? route.params.item.filePath : null;
+
+  const notebookId = route.params ? route.params.notebookId : null;
+  const pictureId = route.params ? route.params.item._id : null;
+
+  console.log(currentMode);
 
   const handleCurrentElemets = (newElement) =>
     setCurrentElements((prevState) => {
@@ -56,6 +67,14 @@ const PainterScreen = ({ route, navigation }) => {
       const base64File = image.encodeToBase64();
       await makeImageFile(filePath, base64File);
       await saveFileToCameraRoll(filePath);
+    }
+  };
+
+  const handleDeletePicture = async () => {
+    if (filePath) {
+      await dispatchNotes(deletePictureFromNotebook(notebookId, pictureId));
+      await deletePathFromDocumentDirectory(filePath);
+      console.log("삭제!");
     }
   };
 
@@ -102,6 +121,11 @@ const PainterScreen = ({ route, navigation }) => {
               size={80}
               color="black"
             />
+            {currentMode === "draw" && (
+              <SelectedMark>
+                <FontAwesome5 name="check-circle" size={24} color="black" />
+              </SelectedMark>
+            )}
           </PenPickerButton>
           <ColorPickerButton
             onPress={() => {
@@ -119,6 +143,11 @@ const PainterScreen = ({ route, navigation }) => {
           </ColorPickerButton>
           <EraserPickerButton onPress={() => setCurrentMode(() => "erase")}>
             <MaterialCommunityIcons name="eraser" size={80} color="black" />
+            {currentMode === "erase" && (
+              <SelectedMark>
+                <FontAwesome5 name="check-circle" size={24} color="black" />
+              </SelectedMark>
+            )}
           </EraserPickerButton>
           <UndoButton onPress={handleUndo}>
             <MaterialCommunityIcons
@@ -127,7 +156,11 @@ const PainterScreen = ({ route, navigation }) => {
               color="black"
             />
           </UndoButton>
-          <DeleteButton onPress={() => Alert.alert("휴지통")}>
+          <DeleteButton
+            onPress={async () => {
+              await handleDeletePicture();
+              navigation.goBack();
+            }}>
             <MaterialCommunityIcons
               name="delete-empty"
               size={80}
@@ -332,9 +365,19 @@ const ButtonsView = styled.View`
 const NewPictureButton = styled.Pressable``;
 const LoadPictureButton = styled.Pressable``;
 
-const PenPickerButton = styled.Pressable``;
+const PenPickerButton = styled.Pressable`
+  position: relative;
+`;
 const ColorPickerButton = styled.Pressable``;
-const EraserPickerButton = styled.Pressable``;
+const EraserPickerButton = styled.Pressable`
+  position: relative;
+`;
+
+const SelectedMark = styled.Text`
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+`;
 
 const UndoButton = styled.Pressable``;
 const DeleteButton = styled.Pressable``;
