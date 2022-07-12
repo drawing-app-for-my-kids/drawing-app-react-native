@@ -202,3 +202,20 @@ export const tempCanvasElements = [
     pathType: "normal",
   },
 ];
+
+const exampleNote = {
+  _id: "notebook1657589872043",
+  createdAt: "2022-07-12T01:37:52.043Z",
+  noteBookCoverImage: "📓",
+  noteBookTitle: "남수오",
+  pictures: [
+    {
+      _id: "picture1657589887012",
+      createdAt: "2022-07-12T01:38:07.012Z",
+      filePath:
+        "file:///Users/wonilnam/Library/Developer/CoreSimulator/Devices/709F3735-8C4E-4A3A-9775-7353EBF07078/data/Containers/Data/Application/DBC577BD-2458-4D2F-9299-9CB10DC7C616/Documents/notebooks/notebook1657589872043/picture1657589887012.png",
+      updatedAt: "2022-07-12T01:38:07.012Z",
+    },
+  ],
+  updatedAt: "2022-07-12T01:38:07.018Z",
+};
