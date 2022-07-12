@@ -42,7 +42,7 @@ const useTouchDrawing = (
               y,
               currentPenColor,
               penSize[currentPenType],
-              "normal",
+              "erasing",
             );
 
             break;
@@ -74,7 +74,7 @@ const useTouchDrawing = (
           case "erase": {
             const xMid = (prevPointRef.current.x + x) / 2;
             const yMid = (prevPointRef.current.y + y) / 2;
-            currentPath.current.quadTo(
+            currentPath.current.path.quadTo(
               prevPointRef.current.x,
               prevPointRef.current.y,
               xMid,

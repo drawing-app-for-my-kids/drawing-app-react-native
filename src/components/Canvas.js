@@ -1,6 +1,12 @@
 import React, { Fragment, useMemo, forwardRef } from "react";
 import { StyleSheet } from "react-native";
-import { Canvas, useImage, Image, Path } from "@shopify/react-native-skia";
+import {
+  Canvas,
+  useImage,
+  Image,
+  Path,
+  Paint,
+} from "@shopify/react-native-skia";
 
 import { resizeImageInfoMake } from "../utils/painterHelper";
 import useTouchDrawing from "../hooks/useTouchDrawing";
@@ -56,6 +62,18 @@ const SCanvas = (
                     strokeWidth={element.size}
                     strokeCap="round"
                   />
+                );
+              case "erasing":
+                return (
+                  <Path
+                    key={index}
+                    path={element.path}
+                    color="white"
+                    style="stroke"
+                    strokeWidth={9}
+                    strokeCap="round">
+                    <Paint blendMode="clear" />
+                  </Path>
                 );
               default:
                 break;
