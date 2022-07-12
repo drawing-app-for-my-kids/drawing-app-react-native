@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components/native";
-import { View, StyleSheet, Alert, Pressable, FlatList } from "react-native";
+import { View, StyleSheet, Text, Pressable, FlatList } from "react-native";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
@@ -120,6 +121,11 @@ const PainterScreen = ({ route, navigation }) => {
               size={80}
               color="black"
             />
+            {currentMode === "draw" && (
+              <SelectedMark>
+                <FontAwesome5 name="check-circle" size={24} color="black" />
+              </SelectedMark>
+            )}
           </PenPickerButton>
           <ColorPickerButton
             onPress={() => {
@@ -137,6 +143,11 @@ const PainterScreen = ({ route, navigation }) => {
           </ColorPickerButton>
           <EraserPickerButton onPress={() => setCurrentMode(() => "erase")}>
             <MaterialCommunityIcons name="eraser" size={80} color="black" />
+            {currentMode === "erase" && (
+              <SelectedMark>
+                <FontAwesome5 name="check-circle" size={24} color="black" />
+              </SelectedMark>
+            )}
           </EraserPickerButton>
           <UndoButton onPress={handleUndo}>
             <MaterialCommunityIcons
@@ -354,9 +365,19 @@ const ButtonsView = styled.View`
 const NewPictureButton = styled.Pressable``;
 const LoadPictureButton = styled.Pressable``;
 
-const PenPickerButton = styled.Pressable``;
+const PenPickerButton = styled.Pressable`
+  position: relative;
+`;
 const ColorPickerButton = styled.Pressable``;
-const EraserPickerButton = styled.Pressable``;
+const EraserPickerButton = styled.Pressable`
+  position: relative;
+`;
+
+const SelectedMark = styled.Text`
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+`;
 
 const UndoButton = styled.Pressable``;
 const DeleteButton = styled.Pressable``;
