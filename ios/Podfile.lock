@@ -96,6 +96,7 @@ PODS:
   - fmt (6.2.1)
   - glog (0.3.5)
   - libevent (2.1.12)
+  - libopencv-contrib (3.4.1)
   - OpenSSL-Universal (1.1.1100)
   - RCT-Folly (2021.06.28.00-v2):
     - boost
@@ -414,6 +415,13 @@ PODS:
     - React-Core
   - RNFS (2.20.0):
     - React-Core
+  - RNOpencv3 (1.0.8):
+    - libopencv-contrib (~> 3.4.1)
+    - React
+    - RNOpencv3/CvCamera (= 1.0.8)
+  - RNOpencv3/CvCamera (1.0.8):
+    - libopencv-contrib (~> 3.4.1)
+    - React
   - RNScreens (3.14.1):
     - React-Core
     - React-RCTImage
@@ -494,6 +502,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - RNFS (from `../node_modules/react-native-fs`)
+  - RNOpencv3 (from `../node_modules/react-native-opencv3/ios`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -511,6 +520,7 @@ SPEC REPOS:
     - FlipperKit
     - fmt
     - libevent
+    - libopencv-contrib
     - OpenSSL-Universal
     - SocketRocket
     - YogaKit
@@ -610,6 +620,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNFS:
     :path: "../node_modules/react-native-fs"
+  RNOpencv3:
+    :path: "../node_modules/react-native-opencv3/ios"
   RNScreens:
     :path: "../node_modules/react-native-screens"
   Yoga:
@@ -643,6 +655,7 @@ SPEC CHECKSUMS:
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 476ee3e89abb49e07f822b48323c51c57124b572
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
+  libopencv-contrib: 18a9e9432fb852d040374ad9ead3ba99fd87eaa2
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   RCT-Folly: 4d8508a426467c48885f1151029bc15fa5d7b3b8
   RCTRequired: 3e917ea5377751094f38145fdece525aa90545a0
@@ -676,11 +689,12 @@ SPEC CHECKSUMS:
   ReactCommon: 095366164a276d91ea704ce53cb03825c487a3f2
   RNCAsyncStorage: d81ee5c3db1060afd49ea7045ad460eff82d2b7d
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
+  RNOpencv3: f958e8d843cb051c19a099b196ed7f72f5ec515a
   RNScreens: aa9a97835afbbdc18a4757870b2b59b7d9fae16a
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   Yoga: 99652481fcd320aefa4a7ef90095b95acd181952
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 0a2f6484de101f722ff7b64e9c0857d410900215
+PODFILE CHECKSUM: 755fa4f51663e1477886b51bc7d6d0b439f32459
 
 COCOAPODS: 1.11.3

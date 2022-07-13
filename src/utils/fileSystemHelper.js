@@ -147,6 +147,24 @@ export const copyTemporaryImageFileToDocumentDirectory = async (filePath) => {
   }
 };
 
+export const copyProcessImageFileToDocumentDirectory = async (
+  processImageFilePath,
+  filePath,
+) => {
+  try {
+    await FileSystem.copyAsync({
+      from: processImageFilePath,
+      to: filePath,
+    });
+
+    const result = await FileSystem.getInfoAsync(filePath);
+
+    console.log("실제 파일 생성 성공!", result.exists);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 // 삭제 로컬 파일
 
 export const deletePathFromDocumentDirectory = async (path) => {

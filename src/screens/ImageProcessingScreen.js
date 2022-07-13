@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Text, Alert, StyleSheet, View, Image } from "react-native";
 import styled from "styled-components/native";
 import { openImagePickerAsync } from "../utils/imagePickerHelper";
+import { Mat, ColorConv, CvInvoke, CvImage } from "react-native-opencv3";
+
 import {
   copyPhotoAlbumImageFileToCacheDirectory,
   downloadTemporaryImageToCacheDirectory,
@@ -14,6 +16,7 @@ import {
 import { addPictureToNotebook } from "../store/actions/noteBookActions";
 import { dispatchNotes } from "../store";
 
+import CannyEdgeDetection from "../components/CannyEdgeDetection";
 import { ImageSlider } from "../components/slider";
 import ControlButton from "../components/buttons/ControlButton";
 
@@ -28,6 +31,7 @@ const ImageProcessingScreen = ({ route, navigation }) => {
   const [sigma, setSigma] = useState(0);
   const [lowThreshold, setLowThreshold] = useState(0);
   const [highThreshold, setHighThreshold] = useState(0);
+  const [edgeDetectionOption, setEdgeDetectionOption] = useState(null);
 
   const { notebookId } = route.params;
 
@@ -59,7 +63,18 @@ const ImageProcessingScreen = ({ route, navigation }) => {
         </OriginalImageView>
         <ProcessedImageView>
           {processedImageUri ? (
-            <Image source={{ uri: processedImageUri }} style={styles.preview} />
+            edgeDetectionOption ? (
+              <CannyEdgeDetection
+                lowThreshold={lowThreshold}
+                highThreshold={highThreshold}
+                processedImageUri={processedImageUri}
+              />
+            ) : (
+              <Image
+                source={{ uri: processedImageUri }}
+                style={styles.preview}
+              />
+            )
           ) : (
             <Text style={{ fontSize: 20 }}>이미지가 없습니다.</Text>
           )}
@@ -77,18 +92,18 @@ const ImageProcessingScreen = ({ route, navigation }) => {
                 </SliderStatus>
               </SliderItem>
               <SliderItem>
-                {ImageSlider(1, 0, 100, (sliderValue) =>
-                  setLowThreshold(sliderValue),
-                )}
+                {ImageSlider(1, 0, 100, (sliderValue) => {
+                  setLowThreshold(sliderValue);
+                })}
                 <SliderStatus>
                   <SLiderLabel>Low Threshold :</SLiderLabel>
                   <SliderValue>{lowThreshold}</SliderValue>
                 </SliderStatus>
               </SliderItem>
               <SliderItem>
-                {ImageSlider(1, 0, 100, (sliderValue) =>
-                  setHighThreshold(sliderValue),
-                )}
+                {ImageSlider(1, 0, 100, (sliderValue) => {
+                  setHighThreshold(sliderValue);
+                })}
                 <SliderStatus>
                   <SLiderLabel>High Threshold :</SLiderLabel>
                   <SliderValue>{highThreshold}</SliderValue>
@@ -104,7 +119,11 @@ const ImageProcessingScreen = ({ route, navigation }) => {
           />
           <ControlButton
             text="채색제거"
-            onPress={() => Alert.alert("채색제거 버튼")}
+            onPress={() => {
+              setProcessedImageUri(null);
+              setProcessedImageUri(temporaryPictureUri);
+              setEdgeDetectionOption({ lowThreshold, highThreshold });
+            }}
           />
           <ControlButton
             text="색상반전"
@@ -169,6 +188,7 @@ const ImageProcessingScreen = ({ route, navigation }) => {
                       );
                       setProcessedImageUri(temporaryPictureUri);
                       setImageSource("fileSystem");
+                      setEdgeDetectionOption(null);
                       setCurrentModal(null);
                     } else if (imageSource === "url") {
                       if (processedImageUri) {
@@ -179,6 +199,7 @@ const ImageProcessingScreen = ({ route, navigation }) => {
                       );
                       setProcessedImageUri(temporaryPictureUri);
                       setImageSource("fileSystem");
+                      setEdgeDetectionOption(null);
                       setCurrentModal(null);
                     }
                   }}>
@@ -290,7 +311,6 @@ const styles = StyleSheet.create({
   preview: {
     width: 580,
     height: 580,
-    resizeMode: "contain",
     transform: [{ scale: 0.95 }],
   },
 });
