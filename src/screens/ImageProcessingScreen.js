@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Text, StyleSheet, View, Image } from "react-native";
+import { Text, StyleSheet, View, Image, Alert } from "react-native";
 import styled from "styled-components/native";
 import { openImagePickerAsync } from "../utils/imagePickerHelper";
 import ViewShot from "react-native-view-shot";
@@ -25,6 +25,7 @@ import ControlButton from "../components/buttons/ControlButton";
 const ImageProcessingScreen = ({ route, navigation }) => {
   const [originalImageUri, setOriginalImageUri] = useState(null);
   const [processedImageUri, setProcessedImageUri] = useState(null);
+  const [capturedImageUri, setCapturedImageUri] = useState(null);
   const [currentModal, setCurrentModal] = useState(null);
   const [onInputUrlModal, setInputUrlModal] = useState(false);
   const [currentInputUrl, setInputUrl] = useState(null);
@@ -48,11 +49,11 @@ const ImageProcessingScreen = ({ route, navigation }) => {
   const captureProcessedImage = async () => {
     const caputureImgUri = await captureRef.current.capture();
     console.log(caputureImgUri);
+    setCapturedImageUri(caputureImgUri);
     await copyProcessImageFileToCacheDirectory("file://" + caputureImgUri);
   };
 
-  console.log(processedImageUri);
-  console.log(sigma);
+  console.log("capturedImageUri", capturedImageUri);
 
   const processedImageUriHandler = (uri) => setProcessedImageUri(uri);
 
@@ -142,7 +143,6 @@ const ImageProcessingScreen = ({ route, navigation }) => {
               setProcessedImageUri(temporaryPictureUri);
               setEdgeDetectionOption({ lowThreshold, highThreshold });
 
-              await captureProcessedImage();
               // await makeProcessImageUri(
               //   temporaryPictureUri,
               //   sigma,
@@ -150,6 +150,13 @@ const ImageProcessingScreen = ({ route, navigation }) => {
               //   highThreshold,
               //   processedImageUriHandler,
               // );
+            }}
+          />
+          <ControlButton
+            text="캡쳐"
+            onPress={async () => {
+              console.log("캡쳐!!");
+              await captureProcessedImage();
             }}
           />
           <ControlButton

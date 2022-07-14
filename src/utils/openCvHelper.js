@@ -1,6 +1,10 @@
 import { RNCv, Mat, CvType, CvSize, ColorConv } from "react-native-opencv3";
 import downloadAssetSource from "react-native-opencv3/downloadAssetSource";
-import { temporaryPictureUri } from "./fileSystemHelper";
+import {
+  rnfsTemporaryPictureUri,
+  rnfsTemporaryPictureUriWithourPrefix,
+} from "./rnfsHelper";
+import * as RNFS from "react-native-fs";
 
 export const makeProcessImageUri = async (
   filePath,
@@ -9,19 +13,20 @@ export const makeProcessImageUri = async (
   highThreshold,
   handler,
 ) => {
-  const newImagePath = temporaryPictureUri;
-
+  const newImagePath = rnfsTemporaryPictureUri;
   const dstMat = await new Mat().init();
 
-  console.log(1);
+  console.log("[opencvHelper]1");
+  console.log("[opencvHelper]filePath", filePath);
 
-  // 이시점에 fileapath가 있는지 확인 필요
-
-  const sourceFile = await downloadAssetSource(filePath);
+  const sourceFile = await downloadAssetSource(
+    rnfsTemporaryPictureUriWithourPrefix,
+  );
   const srcMat = await RNCv.imageToMat(sourceFile);
   const gaussianKernelSize = new CvSize(3, 3);
 
-  console.log(2);
+  console.log("[opencvHelper]2");
+  console.log("srcMat", srcMat);
 
   RNCv.invokeMethod("cvtColor", {
     p1: srcMat,
@@ -47,12 +52,15 @@ export const makeProcessImageUri = async (
     p2: dstMat,
   });
 
-  console.log(3);
+  console.log("[opencvHelper]3");
+  console.log(dstMat);
 
-  const { uri, width, height } = await RNCv.matToImage(dstMat, newImagePath);
-  console.log(uri);
+  console.log(newImagePath);
+  const result = await RNCv.matToImage(dstMat, newImagePath);
+  console.log(result.uri);
 
-  console.log(4);
+  console.log("[opencvHelper]final");
+  RNCv.deleteMat(dstMat);
 
-  handler(uri);
+  handler(result.uri);
 };

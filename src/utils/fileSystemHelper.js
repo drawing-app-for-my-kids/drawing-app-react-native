@@ -4,8 +4,10 @@ import * as FileSystem from "expo-file-system";
 
 const { documentDirectory, cacheDirectory } = FileSystem;
 const temporaryPicture = "temporaryPicture.png";
+const temporaryCannyPicture = "temporaryCannyPicture.png";
 
 export const temporaryPictureUri = cacheDirectory + temporaryPicture;
+export const temporaryCannyPictureUri = cacheDirectory + temporaryCannyPicture;
 
 export const filePathMaker = (folderName, fileName) => {
   const filePath =
