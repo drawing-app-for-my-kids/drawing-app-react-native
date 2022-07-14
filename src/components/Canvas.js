@@ -6,6 +6,9 @@ import {
   Image,
   Path,
   Paint,
+  DiscretePathEffect,
+  DashPathEffect,
+  Path1DPathEffect,
 } from "@shopify/react-native-skia";
 
 import { resizeImageInfoMake } from "../utils/painterHelper";
@@ -52,7 +55,7 @@ const SCanvas = (
             return <Image fit="fill" key={index} image={element.image} />;
           default:
             switch (element.pathType) {
-              case "normal":
+              case "lead-pencil":
                 return (
                   <Path
                     key={index}
@@ -62,6 +65,57 @@ const SCanvas = (
                     strokeWidth={element.size}
                     strokeCap="round"
                   />
+                );
+              case "grease-pencil":
+                return (
+                  <Path
+                    key={index}
+                    path={element.path}
+                    color={element.color}
+                    style="stroke"
+                    strokeWidth={element.size}
+                    strokeCap="round"
+                  />
+                );
+              case "brush":
+                return (
+                  <Path
+                    key={index}
+                    path={element.path}
+                    color={element.color}
+                    style="stroke"
+                    strokeWidth={element.size}
+                    strokeCap="round"
+                  />
+                );
+              case "format-paint":
+                return (
+                  <Path
+                    key={index}
+                    path={element.path}
+                    color={element.color}
+                    style="stroke"
+                    strokeWidth={element.size}
+                    strokeCap="round">
+                    <Path1DPathEffect
+                      path="M -10 0 L 0 -10, 10 0, 0 10 Z"
+                      advance={20}
+                      phase={0}
+                      style="rotate"
+                    />
+                  </Path>
+                );
+              case "spray":
+                return (
+                  <Path
+                    key={index}
+                    path={element.path}
+                    color={element.color}
+                    style="stroke"
+                    strokeWidth={element.size}
+                    strokeCap="round">
+                    <DashPathEffect intervals={[10, 30]} />
+                  </Path>
                 );
               case "erasing":
                 return (
@@ -76,7 +130,16 @@ const SCanvas = (
                   </Path>
                 );
               default:
-                break;
+                return (
+                  <Path
+                    key={index}
+                    path={element.path}
+                    color={element.color}
+                    style="stroke"
+                    strokeWidth={element.size}
+                    strokeCap="round"
+                  />
+                );
             }
         }
       }),

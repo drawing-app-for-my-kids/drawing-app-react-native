@@ -12,6 +12,8 @@ import {
 } from "react-native";
 
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
 import Feather from "@expo/vector-icons/Feather";
 import IconButton from "../components/buttons/IconButton";
 import NoteBookItem from "../components/buttons/NoteBookItem";
@@ -70,11 +72,11 @@ const HomeScreen = ({ navigation }) => {
       <RightControlView>
         <NewButton
           onPress={() => setCurrentModal("newNoteModal")}
-          icon={<FontAwesome5 name="plus" size={36} color="black" />}
+          icon={<MaterialCommunityIcons name="plus" size={60} color="black" />}
         />
         <InfoButton
           onPress={() => setCurrentModal("infoModal")}
-          icon={<FontAwesome5 name="info-circle" size={36} color="black" />}
+          icon={<FontAwesome5 name="info-circle" size={44} color="black" />}
         />
         <NewNoteModal
           animationType="slide"
@@ -236,7 +238,10 @@ const RightControlView = styled.View`
   align-items: center;
 `;
 
-const NewButton = styled(IconButton)``;
+const NewButton = styled(IconButton)`
+  width: 80px;
+  height: 80px;
+`;
 
 const InfoButton = styled(IconButton)``;
 

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { Text, FlatList, Modal, View, StyleSheet } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import styled from "styled-components/native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
 import PictureItem from "../components/buttons/PictureItem";
 import { getItemFromAsyncStorage } from "../utils/asyncStorageHelper";
-
 import { deleteNotebook } from "../store/actions/noteBookActions";
 import { dispatchNotes } from "../store/index";
 import { deleteFolderFromDocumentDirectory } from "../utils/fileSystemHelper";
@@ -17,7 +18,7 @@ const NoteBookScreen = ({ route, navigation }) => {
 
   const { _id: notebookId, noteBookTitle } = route.params;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const showNotebookPictures = async () => {
       setLoading(true);
       const notebooks = await getItemFromAsyncStorage("Notes");
@@ -64,8 +65,16 @@ const NoteBookScreen = ({ route, navigation }) => {
       </LeftMainView>
       <RightControlView>
         <TopButtons>
-          <NewPictureButton onPress={() => navigation.navigate("Painter")}>
-            <Text style={{ fontSize: 60, marginBottom: 20 }}>📄</Text>
+          <NewPictureButton
+            onPress={() =>
+              navigation.navigate("Painter", {
+                notebookId,
+                previousScreen: route.name,
+                previousTitle: noteBookTitle,
+                previousId: notebookId,
+              })
+            }>
+            <MaterialCommunityIcons name="plus" size={60} color="black" />
           </NewPictureButton>
           <LoadPictureButton
             onPress={() =>
@@ -76,7 +85,7 @@ const NoteBookScreen = ({ route, navigation }) => {
                 previousId: notebookId,
               })
             }>
-            <Text style={{ fontSize: 60, marginBottom: 20 }}>✂️</Text>
+            <MaterialCommunityIcons name="image-edit" size={60} color="black" />
           </LoadPictureButton>
         </TopButtons>
         <BottomButtons>
@@ -84,7 +93,11 @@ const NoteBookScreen = ({ route, navigation }) => {
             onPress={() => {
               setCurrentModal("deleteNoteModal");
             }}>
-            <Text style={{ fontSize: 60 }}>🗑</Text>
+            <MaterialCommunityIcons
+              name="notebook-remove"
+              size={60}
+              color="black"
+            />
           </DeleteNotebookButton>
         </BottomButtons>
         <DeleteNoteModal
@@ -176,7 +189,9 @@ const RightControlView = styled.View`
 `;
 
 const TopButtons = styled.View``;
-const NewPictureButton = styled.Pressable``;
+const NewPictureButton = styled.Pressable`
+  margin-bottom: 20px;
+`;
 const LoadPictureButton = styled.Pressable``;
 
 const BottomButtons = styled.View``;

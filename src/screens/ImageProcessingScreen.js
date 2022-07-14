@@ -126,7 +126,9 @@ const ImageProcessingScreen = ({ route, navigation }) => {
         <ButtonsView>
           <ControlButton
             text="불러오기"
-            onPress={() => setCurrentModal("imageLoadModal")}
+            onPress={() => {
+              setCurrentModal("imageLoadModal");
+            }}
           />
           <ControlButton
             text="채색제거"
@@ -137,14 +139,10 @@ const ImageProcessingScreen = ({ route, navigation }) => {
             }}
           />
           <ControlButton
-            text="캡쳐"
-            onPress={async () => {
-              await captureProcessedImage();
-            }}
-          />
-          <ControlButton
             text="저장"
             onPress={async () => {
+              await captureProcessedImage();
+
               const newDate = new Date();
               const pictureId = "picture" + newDate.getTime();
               const filePath = filePathMaker(notebookId, pictureId);
@@ -325,6 +323,7 @@ const styles = StyleSheet.create({
     width: 580,
     height: 580,
     transform: [{ scale: 0.95 }],
+    resizeMode: "contain",
   },
 });
 
