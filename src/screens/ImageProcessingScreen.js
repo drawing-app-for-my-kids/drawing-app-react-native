@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Text, Alert, StyleSheet, View, Image } from "react-native";
+import React, { useRef, useState } from "react";
+import { Text, StyleSheet, View, Image } from "react-native";
 import styled from "styled-components/native";
 import { openImagePickerAsync } from "../utils/imagePickerHelper";
-import { Mat, ColorConv, CvInvoke, CvImage } from "react-native-opencv3";
+import ViewShot from "react-native-view-shot";
 
 import {
   copyPhotoAlbumImageFileToCacheDirectory,
@@ -11,7 +11,9 @@ import {
   copyTemporaryImageFileToDocumentDirectory,
   filePathMaker,
   deleteTemporaryImage,
+  copyProcessImageFileToCacheDirectory,
 } from "../utils/fileSystemHelper";
+import { makeProcessImageUri } from "../utils/openCvHelper";
 
 import { addPictureToNotebook } from "../store/actions/noteBookActions";
 import { dispatchNotes } from "../store";
@@ -32,6 +34,7 @@ const ImageProcessingScreen = ({ route, navigation }) => {
   const [lowThreshold, setLowThreshold] = useState(0);
   const [highThreshold, setHighThreshold] = useState(0);
   const [edgeDetectionOption, setEdgeDetectionOption] = useState(null);
+  const captureRef = useRef(null);
 
   const { notebookId } = route.params;
 
@@ -41,6 +44,17 @@ const ImageProcessingScreen = ({ route, navigation }) => {
     setOriginalImageUri(imageUri);
     setImageSource("photoAlbum");
   };
+
+  const captureProcessedImage = async () => {
+    const caputureImgUri = await captureRef.current.capture();
+    console.log(caputureImgUri);
+    await copyProcessImageFileToCacheDirectory("file://" + caputureImgUri);
+  };
+
+  console.log(processedImageUri);
+  console.log(sigma);
+
+  const processedImageUriHandler = (uri) => setProcessedImageUri(uri);
 
   return (
     <Contatiner>
@@ -61,10 +75,14 @@ const ImageProcessingScreen = ({ route, navigation }) => {
             </ImageLoadButton>
           )}
         </OriginalImageView>
-        <ProcessedImageView>
+        <ProcessedImageView
+          collapsable={false}
+          ref={captureRef}
+          options={{ format: "png", quality: 1 }}>
           {processedImageUri ? (
             edgeDetectionOption ? (
               <CannyEdgeDetection
+                sigma={sigma}
                 lowThreshold={lowThreshold}
                 highThreshold={highThreshold}
                 processedImageUri={processedImageUri}
@@ -119,15 +137,20 @@ const ImageProcessingScreen = ({ route, navigation }) => {
           />
           <ControlButton
             text="채색제거"
-            onPress={() => {
+            onPress={async () => {
               setProcessedImageUri(null);
               setProcessedImageUri(temporaryPictureUri);
               setEdgeDetectionOption({ lowThreshold, highThreshold });
+
+              await captureProcessedImage();
+              // await makeProcessImageUri(
+              //   temporaryPictureUri,
+              //   sigma,
+              //   lowThreshold,
+              //   highThreshold,
+              //   processedImageUriHandler,
+              // );
             }}
-          />
-          <ControlButton
-            text="색상반전"
-            onPress={() => Alert.alert("색상반전 버튼")}
           />
           <ControlButton
             text="저장"
@@ -145,7 +168,9 @@ const ImageProcessingScreen = ({ route, navigation }) => {
 
               console.log("newPictureInfo", newPictureInfo);
 
-              dispatchNotes(addPictureToNotebook(notebookId, newPictureInfo));
+              await dispatchNotes(
+                addPictureToNotebook(notebookId, newPictureInfo),
+              );
               await copyTemporaryImageFileToDocumentDirectory(filePath);
               await deleteTemporaryImage();
 
@@ -345,7 +370,7 @@ const ImageLoadButton = styled.Pressable`
   height: 200px;
 `;
 
-const ProcessedImageView = styled.View`
+const ProcessedImageView = styled(ViewShot)`
   width: 50%;
   height: 100%;
   display: flex;
