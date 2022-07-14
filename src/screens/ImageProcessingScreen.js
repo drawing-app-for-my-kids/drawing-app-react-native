@@ -13,7 +13,6 @@ import {
   deleteTemporaryImage,
   copyProcessImageFileToCacheDirectory,
 } from "../utils/fileSystemHelper";
-import { makeProcessImageUri } from "../utils/openCvHelper";
 
 import { addPictureToNotebook } from "../store/actions/noteBookActions";
 import { dispatchNotes } from "../store";
@@ -25,7 +24,6 @@ import ControlButton from "../components/buttons/ControlButton";
 const ImageProcessingScreen = ({ route, navigation }) => {
   const [originalImageUri, setOriginalImageUri] = useState(null);
   const [processedImageUri, setProcessedImageUri] = useState(null);
-  const [capturedImageUri, setCapturedImageUri] = useState(null);
   const [currentModal, setCurrentModal] = useState(null);
   const [onInputUrlModal, setInputUrlModal] = useState(false);
   const [currentInputUrl, setInputUrl] = useState(null);
@@ -48,14 +46,8 @@ const ImageProcessingScreen = ({ route, navigation }) => {
 
   const captureProcessedImage = async () => {
     const caputureImgUri = await captureRef.current.capture();
-    console.log(caputureImgUri);
-    setCapturedImageUri(caputureImgUri);
     await copyProcessImageFileToCacheDirectory("file://" + caputureImgUri);
   };
-
-  console.log("capturedImageUri", capturedImageUri);
-
-  const processedImageUriHandler = (uri) => setProcessedImageUri(uri);
 
   return (
     <Contatiner>
@@ -142,20 +134,11 @@ const ImageProcessingScreen = ({ route, navigation }) => {
               setProcessedImageUri(null);
               setProcessedImageUri(temporaryPictureUri);
               setEdgeDetectionOption({ lowThreshold, highThreshold });
-
-              // await makeProcessImageUri(
-              //   temporaryPictureUri,
-              //   sigma,
-              //   lowThreshold,
-              //   highThreshold,
-              //   processedImageUriHandler,
-              // );
             }}
           />
           <ControlButton
             text="캡쳐"
             onPress={async () => {
-              console.log("캡쳐!!");
               await captureProcessedImage();
             }}
           />
@@ -172,8 +155,6 @@ const ImageProcessingScreen = ({ route, navigation }) => {
                 updatedAt: newDate,
                 filePath,
               };
-
-              console.log("newPictureInfo", newPictureInfo);
 
               await dispatchNotes(
                 addPictureToNotebook(notebookId, newPictureInfo),
