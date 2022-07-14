@@ -18,6 +18,7 @@ import { saveFileToCameraRoll } from "../utils/cameraRollHelper";
 import {
   deletePictureFromNotebook,
   addPictureToNotebook,
+  updatePicture,
 } from "../store/actions/noteBookActions";
 import { dispatchNotes } from "../store/index";
 
@@ -68,11 +69,12 @@ const PainterScreen = ({ route, navigation }) => {
           updatedAt: newDate,
           filePath: newFilePath,
         };
-        await dispatchNotes(addPictureToNotebook(notebookId, newPictureInfo));
         const base64File = image.encodeToBase64();
+        await dispatchNotes(addPictureToNotebook(notebookId, newPictureInfo));
         await makeImageFile(newFilePath, base64File);
       } else {
         const base64File = image.encodeToBase64();
+        await dispatchNotes(updatePicture(notebookId, pictureId));
         await makeImageFile(filePath, base64File);
       }
     }

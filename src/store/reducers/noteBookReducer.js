@@ -3,6 +3,7 @@ import {
   DELETE_NOTEBOOK,
   ADD_PICTURE_TO_NOTEBOOK,
   DELETE_PICTURE_FROM_NOTEBOOK,
+  UPDATE_PICTURE,
 } from "../actions/noteBookActions";
 
 export default function notebookReducer(state, action) {
@@ -54,6 +55,26 @@ export default function notebookReducer(state, action) {
 
       return newState;
     }
+
+    case UPDATE_PICTURE: {
+      newState = [...state];
+      console.log(newState);
+      const { notebookId, pictureId } = action.payload;
+      const targeNoteIndex = newState.findIndex(
+        (notebook) => notebook._id === notebookId,
+      );
+      const targetPicturIndex = newState[targeNoteIndex].pictures.findIndex(
+        (picture) => picture._id === pictureId,
+      );
+
+      newState[targeNoteIndex].pictures[targetPicturIndex].updatedAt = newDate;
+      newState[targeNoteIndex].updatedAt = newDate;
+
+      console.log(newState);
+
+      return newState;
+    }
+
     default:
       return state;
   }
