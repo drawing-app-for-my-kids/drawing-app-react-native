@@ -12,9 +12,13 @@ import { useCanvasRef } from "@shopify/react-native-skia";
 import {
   makeImageFile,
   deletePathFromDocumentDirectory,
+  filePathMaker,
 } from "../utils/fileSystemHelper";
 import { saveFileToCameraRoll } from "../utils/cameraRollHelper";
-import { deletePictureFromNotebook } from "../store/actions/noteBookActions";
+import {
+  deletePictureFromNotebook,
+  addPictureToNotebook,
+} from "../store/actions/noteBookActions";
 import { dispatchNotes } from "../store/index";
 
 const PainterScreen = ({ route, navigation }) => {
@@ -26,10 +30,9 @@ const PainterScreen = ({ route, navigation }) => {
   const [prevElementsLengthList, setPrevElementsLengthList] = useState([]);
   const canvasRef = useCanvasRef();
 
-  const filePath = route.params ? route.params.item.filePath : null;
-
-  const notebookId = route.params ? route.params.notebookId : null;
-  const pictureId = route.params ? route.params.item._id : null;
+  const filePath = route.params.item ? route.params.item.filePath : null;
+  const pictureId = route.params.item ? route.params.item._id : null;
+  const notebookId = route.params.notebookId;
 
   const handleCurrentElemets = (newElement) =>
     setCurrentElements((prevState) => {
@@ -54,8 +57,24 @@ const PainterScreen = ({ route, navigation }) => {
   const handleSave = async () => {
     const image = canvasRef.current.makeImageSnapshot();
     if (image) {
-      const base64File = image.encodeToBase64();
-      await makeImageFile(filePath, base64File);
+      if (filePath === null) {
+        const newDate = new Date();
+        const newPictureId = "picture" + newDate.getTime();
+        const newFilePath = filePathMaker(notebookId, newPictureId);
+
+        const newPictureInfo = {
+          _id: pictureId,
+          createdAt: newDate,
+          updatedAt: newDate,
+          filePath: newFilePath,
+        };
+        await dispatchNotes(addPictureToNotebook(notebookId, newPictureInfo));
+        const base64File = image.encodeToBase64();
+        await makeImageFile(newFilePath, base64File);
+      } else {
+        const base64File = image.encodeToBase64();
+        await makeImageFile(filePath, base64File);
+      }
     }
   };
 
@@ -93,20 +112,20 @@ const PainterScreen = ({ route, navigation }) => {
       </LeftMainView>
       <RightControlView>
         <ButtonsView>
-          <NewPictureButton
+          <SaveFileButton
             onPress={async () => {
               await handleSave();
               navigation.goBack();
             }}>
             <MaterialIcons name="save" size={80} color="black" />
-          </NewPictureButton>
-          <LoadPictureButton
+          </SaveFileButton>
+          <SaveCameraRollButton
             onPress={async () => {
               await handleSaveToCameraRoll();
               navigation.goBack();
             }}>
             <MaterialCommunityIcons name="camera" size={80} color="black" />
-          </LoadPictureButton>
+          </SaveCameraRollButton>
           <PenPickerButton
             onPress={() => {
               setCurrentMode(() => "draw");
@@ -360,8 +379,8 @@ const ButtonsView = styled.View`
   align-items: center;
 `;
 
-const NewPictureButton = styled.Pressable``;
-const LoadPictureButton = styled.Pressable``;
+const SaveFileButton = styled.Pressable``;
+const SaveCameraRollButton = styled.Pressable``;
 
 const PenPickerButton = styled.Pressable`
   position: relative;

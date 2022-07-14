@@ -64,7 +64,15 @@ const NoteBookScreen = ({ route, navigation }) => {
       </LeftMainView>
       <RightControlView>
         <TopButtons>
-          <NewPictureButton onPress={() => navigation.navigate("Painter")}>
+          <NewPictureButton
+            onPress={() =>
+              navigation.navigate("Painter", {
+                notebookId,
+                previousScreen: route.name,
+                previousTitle: noteBookTitle,
+                previousId: notebookId,
+              })
+            }>
             <Text style={{ fontSize: 60, marginBottom: 20 }}>📄</Text>
           </NewPictureButton>
           <LoadPictureButton
