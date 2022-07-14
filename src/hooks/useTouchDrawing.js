@@ -31,7 +31,7 @@ const useTouchDrawing = (
               y,
               currentPenColor,
               penSize[currentPenType],
-              "normal",
+              currentPenType,
             );
 
             break;
