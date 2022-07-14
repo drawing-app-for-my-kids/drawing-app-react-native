@@ -31,8 +31,6 @@ const PainterScreen = ({ route, navigation }) => {
   const notebookId = route.params ? route.params.notebookId : null;
   const pictureId = route.params ? route.params.item._id : null;
 
-  console.log(currentMode);
-
   const handleCurrentElemets = (newElement) =>
     setCurrentElements((prevState) => {
       return [...prevState, newElement];

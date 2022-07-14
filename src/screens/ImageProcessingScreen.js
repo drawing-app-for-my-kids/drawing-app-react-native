@@ -1,7 +1,9 @@
-import React, { useState } from "react";
-import { Text, Alert, StyleSheet, View, Image } from "react-native";
+import React, { useRef, useState } from "react";
+import { Text, StyleSheet, View, Image, Alert } from "react-native";
 import styled from "styled-components/native";
 import { openImagePickerAsync } from "../utils/imagePickerHelper";
+import ViewShot from "react-native-view-shot";
+
 import {
   copyPhotoAlbumImageFileToCacheDirectory,
   downloadTemporaryImageToCacheDirectory,
@@ -9,11 +11,13 @@ import {
   copyTemporaryImageFileToDocumentDirectory,
   filePathMaker,
   deleteTemporaryImage,
+  copyProcessImageFileToCacheDirectory,
 } from "../utils/fileSystemHelper";
 
 import { addPictureToNotebook } from "../store/actions/noteBookActions";
 import { dispatchNotes } from "../store";
 
+import CannyEdgeDetection from "../components/CannyEdgeDetection";
 import { ImageSlider } from "../components/slider";
 import ControlButton from "../components/buttons/ControlButton";
 
@@ -28,6 +32,8 @@ const ImageProcessingScreen = ({ route, navigation }) => {
   const [sigma, setSigma] = useState(0);
   const [lowThreshold, setLowThreshold] = useState(0);
   const [highThreshold, setHighThreshold] = useState(0);
+  const [edgeDetectionOption, setEdgeDetectionOption] = useState(null);
+  const captureRef = useRef(null);
 
   const { notebookId } = route.params;
 
@@ -36,6 +42,11 @@ const ImageProcessingScreen = ({ route, navigation }) => {
 
     setOriginalImageUri(imageUri);
     setImageSource("photoAlbum");
+  };
+
+  const captureProcessedImage = async () => {
+    const caputureImgUri = await captureRef.current.capture();
+    await copyProcessImageFileToCacheDirectory("file://" + caputureImgUri);
   };
 
   return (
@@ -57,9 +68,24 @@ const ImageProcessingScreen = ({ route, navigation }) => {
             </ImageLoadButton>
           )}
         </OriginalImageView>
-        <ProcessedImageView>
+        <ProcessedImageView
+          collapsable={false}
+          ref={captureRef}
+          options={{ format: "png", quality: 1 }}>
           {processedImageUri ? (
-            <Image source={{ uri: processedImageUri }} style={styles.preview} />
+            edgeDetectionOption ? (
+              <CannyEdgeDetection
+                sigma={sigma}
+                lowThreshold={lowThreshold}
+                highThreshold={highThreshold}
+                processedImageUri={processedImageUri}
+              />
+            ) : (
+              <Image
+                source={{ uri: processedImageUri }}
+                style={styles.preview}
+              />
+            )
           ) : (
             <Text style={{ fontSize: 20 }}>이미지가 없습니다.</Text>
           )}
@@ -77,18 +103,18 @@ const ImageProcessingScreen = ({ route, navigation }) => {
                 </SliderStatus>
               </SliderItem>
               <SliderItem>
-                {ImageSlider(1, 0, 100, (sliderValue) =>
-                  setLowThreshold(sliderValue),
-                )}
+                {ImageSlider(1, 0, 100, (sliderValue) => {
+                  setLowThreshold(sliderValue);
+                })}
                 <SliderStatus>
                   <SLiderLabel>Low Threshold :</SLiderLabel>
                   <SliderValue>{lowThreshold}</SliderValue>
                 </SliderStatus>
               </SliderItem>
               <SliderItem>
-                {ImageSlider(1, 0, 100, (sliderValue) =>
-                  setHighThreshold(sliderValue),
-                )}
+                {ImageSlider(1, 0, 100, (sliderValue) => {
+                  setHighThreshold(sliderValue);
+                })}
                 <SliderStatus>
                   <SLiderLabel>High Threshold :</SLiderLabel>
                   <SliderValue>{highThreshold}</SliderValue>
@@ -104,11 +130,17 @@ const ImageProcessingScreen = ({ route, navigation }) => {
           />
           <ControlButton
             text="채색제거"
-            onPress={() => Alert.alert("채색제거 버튼")}
+            onPress={async () => {
+              setProcessedImageUri(null);
+              setProcessedImageUri(temporaryPictureUri);
+              setEdgeDetectionOption({ lowThreshold, highThreshold });
+            }}
           />
           <ControlButton
-            text="색상반전"
-            onPress={() => Alert.alert("색상반전 버튼")}
+            text="캡쳐"
+            onPress={async () => {
+              await captureProcessedImage();
+            }}
           />
           <ControlButton
             text="저장"
@@ -124,9 +156,9 @@ const ImageProcessingScreen = ({ route, navigation }) => {
                 filePath,
               };
 
-              console.log("newPictureInfo", newPictureInfo);
-
-              dispatchNotes(addPictureToNotebook(notebookId, newPictureInfo));
+              await dispatchNotes(
+                addPictureToNotebook(notebookId, newPictureInfo),
+              );
               await copyTemporaryImageFileToDocumentDirectory(filePath);
               await deleteTemporaryImage();
 
@@ -169,6 +201,7 @@ const ImageProcessingScreen = ({ route, navigation }) => {
                       );
                       setProcessedImageUri(temporaryPictureUri);
                       setImageSource("fileSystem");
+                      setEdgeDetectionOption(null);
                       setCurrentModal(null);
                     } else if (imageSource === "url") {
                       if (processedImageUri) {
@@ -179,6 +212,7 @@ const ImageProcessingScreen = ({ route, navigation }) => {
                       );
                       setProcessedImageUri(temporaryPictureUri);
                       setImageSource("fileSystem");
+                      setEdgeDetectionOption(null);
                       setCurrentModal(null);
                     }
                   }}>
@@ -290,7 +324,6 @@ const styles = StyleSheet.create({
   preview: {
     width: 580,
     height: 580,
-    resizeMode: "contain",
     transform: [{ scale: 0.95 }],
   },
 });
@@ -325,7 +358,7 @@ const ImageLoadButton = styled.Pressable`
   height: 200px;
 `;
 
-const ProcessedImageView = styled.View`
+const ProcessedImageView = styled(ViewShot)`
   width: 50%;
   height: 100%;
   display: flex;
