@@ -6,8 +6,8 @@ const useFetchNotebooks = (isFocused, currentModal) => {
 
   useEffect(() => {
     const getNotebooks = async () => {
-      const noteBookList = await getItemFromAsyncStorage("Notes");
-      setNoteBookList(noteBookList);
+      const currentNotebookList = await getItemFromAsyncStorage("Notes");
+      setNoteBookList(currentNotebookList);
     };
 
     getNotebooks();

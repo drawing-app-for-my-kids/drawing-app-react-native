@@ -41,7 +41,6 @@ export default function notebookReducer(state, action) {
     }
     case DELETE_PICTURE_FROM_NOTEBOOK: {
       newState = [...state];
-      console.log(newState);
       const { notebookId, pictureId } = action.payload;
       const targeIndex = newState.findIndex(
         (notebook) => notebook._id === notebookId,
@@ -51,14 +50,11 @@ export default function notebookReducer(state, action) {
         (picture) => picture._id !== pictureId,
       );
 
-      console.log(newState);
-
       return newState;
     }
 
     case UPDATE_PICTURE: {
       newState = [...state];
-      console.log(newState);
       const { notebookId, pictureId } = action.payload;
       const targeNoteIndex = newState.findIndex(
         (notebook) => notebook._id === notebookId,
@@ -69,8 +65,6 @@ export default function notebookReducer(state, action) {
 
       newState[targeNoteIndex].pictures[targetPicturIndex].updatedAt = newDate;
       newState[targeNoteIndex].updatedAt = newDate;
-
-      console.log(newState);
 
       return newState;
     }

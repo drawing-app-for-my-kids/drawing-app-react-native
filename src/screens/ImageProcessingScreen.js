@@ -1,8 +1,18 @@
 import React, { useRef, useState } from "react";
-import { Text, StyleSheet, View, Image, Alert } from "react-native";
+import {
+  Text,
+  StyleSheet,
+  View,
+  Image,
+  Alert,
+  Modal,
+  Pressable,
+} from "react-native";
 import styled from "styled-components/native";
 import { openImagePickerAsync } from "../utils/imagePickerHelper";
 import ViewShot from "react-native-view-shot";
+import Feather from "@expo/vector-icons/Feather";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
 import {
   copyPhotoAlbumImageFileToCacheDirectory,
@@ -29,9 +39,9 @@ const ImageProcessingScreen = ({ route, navigation }) => {
   const [currentInputUrl, setInputUrl] = useState(null);
   const [imageSource, setImageSource] = useState(null);
 
-  const [sigma, setSigma] = useState(0);
-  const [lowThreshold, setLowThreshold] = useState(0);
-  const [highThreshold, setHighThreshold] = useState(0);
+  const [sigma, setSigma] = useState(1.3);
+  const [lowThreshold, setLowThreshold] = useState(30);
+  const [highThreshold, setHighThreshold] = useState(70);
   const [edgeDetectionOption, setEdgeDetectionOption] = useState(null);
   const captureRef = useRef(null);
 
@@ -51,28 +61,12 @@ const ImageProcessingScreen = ({ route, navigation }) => {
 
   return (
     <Contatiner>
-      <UpperMainView>
-        <OriginalImageView
-          style={{ borderRightColor: "black", borderRightWidth: 1 }}>
-          {originalImageUri ? (
-            <Image source={{ uri: originalImageUri }} style={styles.preview} />
-          ) : (
-            <ImageLoadButton onPress={() => setCurrentModal("imageLoadModal")}>
-              <Text
-                style={{
-                  fontSize: 60,
-                }}>
-                📂
-              </Text>
-              <Text style={{ fontSize: 20 }}>이미지 불러오기</Text>
-            </ImageLoadButton>
-          )}
-        </OriginalImageView>
+      <LeftMainView>
         <ProcessedImageView
           collapsable={false}
           ref={captureRef}
           options={{ format: "png", quality: 1 }}>
-          {processedImageUri ? (
+          {originalImageUri ? (
             edgeDetectionOption ? (
               <CannyEdgeDetection
                 sigma={sigma}
@@ -87,42 +81,11 @@ const ImageProcessingScreen = ({ route, navigation }) => {
               />
             )
           ) : (
-            <Text style={{ fontSize: 20 }}>이미지가 없습니다.</Text>
+            <Text style={{ fontSize: 40 }}>이미지가 없습니다.</Text>
           )}
         </ProcessedImageView>
-      </UpperMainView>
-      <DownerControlView>
-        <SliderView>
-          {originalImageUri && (
-            <Sliders>
-              <SliderItem>
-                {ImageSlider(0.1, 0, 2, (sliderValue) => setSigma(sliderValue))}
-                <SliderStatus>
-                  <SLiderLabel>Sigma :</SLiderLabel>
-                  <SliderValue>{Math.floor(sigma * 10) / 10}</SliderValue>
-                </SliderStatus>
-              </SliderItem>
-              <SliderItem>
-                {ImageSlider(1, 0, 100, (sliderValue) => {
-                  setLowThreshold(sliderValue);
-                })}
-                <SliderStatus>
-                  <SLiderLabel>Low Threshold :</SLiderLabel>
-                  <SliderValue>{lowThreshold}</SliderValue>
-                </SliderStatus>
-              </SliderItem>
-              <SliderItem>
-                {ImageSlider(1, 0, 100, (sliderValue) => {
-                  setHighThreshold(sliderValue);
-                })}
-                <SliderStatus>
-                  <SLiderLabel>High Threshold :</SLiderLabel>
-                  <SliderValue>{highThreshold}</SliderValue>
-                </SliderStatus>
-              </SliderItem>
-            </Sliders>
-          )}
-        </SliderView>
+      </LeftMainView>
+      <RightControlView>
         <ButtonsView>
           <ControlButton
             text="불러오기"
@@ -133,41 +96,97 @@ const ImageProcessingScreen = ({ route, navigation }) => {
           <ControlButton
             text="채색제거"
             onPress={async () => {
-              setProcessedImageUri(null);
-              setProcessedImageUri(temporaryPictureUri);
-              setEdgeDetectionOption({ lowThreshold, highThreshold });
+              if (originalImageUri) {
+                setProcessedImageUri(null);
+                setProcessedImageUri(temporaryPictureUri);
+                setEdgeDetectionOption({ lowThreshold, highThreshold });
+              } else {
+                Alert.alert("먼저 이미지를 불러오세요.");
+              }
             }}
           />
           <ControlButton
             text="저장"
             onPress={async () => {
-              await captureProcessedImage();
+              if (processedImageUri) {
+                await captureProcessedImage();
 
-              const newDate = new Date();
-              const pictureId = "picture" + newDate.getTime();
-              const filePath = filePathMaker(notebookId, pictureId);
+                const newDate = new Date();
+                const pictureId = "picture" + newDate.getTime();
+                const filePath = filePathMaker(notebookId, pictureId);
 
-              const newPictureInfo = {
-                _id: pictureId,
-                createdAt: newDate,
-                updatedAt: newDate,
-                filePath,
-              };
+                const newPictureInfo = {
+                  _id: pictureId,
+                  createdAt: newDate,
+                  updatedAt: newDate,
+                  filePath,
+                };
 
-              await dispatchNotes(
-                addPictureToNotebook(notebookId, newPictureInfo),
-              );
-              await copyTemporaryImageFileToDocumentDirectory(filePath);
-              await deleteTemporaryImage();
+                await dispatchNotes(
+                  addPictureToNotebook(notebookId, newPictureInfo),
+                );
+                await copyTemporaryImageFileToDocumentDirectory(filePath);
+                await deleteTemporaryImage();
 
-              navigation.navigate(route.params.previousScreen, {
-                noteBookTitle: route.params.previousTitle,
-                _id: route.params.previousId,
-              });
+                navigation.navigate(route.params.previousScreen, {
+                  noteBookTitle: route.params.previousTitle,
+                  _id: route.params.previousId,
+                });
+              } else {
+                Alert.alert("저장할 파일이 없습니다.");
+              }
+            }}
+          />
+          <ControlButton
+            text="초기화"
+            onPress={() => {
+              setOriginalImageUri(null);
+              setProcessedImageUri(null);
+              setImageSource(null);
+              setSigma(1.3);
+              setLowThreshold(30);
+              setHighThreshold(70);
+              setEdgeDetectionOption(null);
             }}
           />
         </ButtonsView>
-      </DownerControlView>
+        <SliderView>
+          {originalImageUri && (
+            <Sliders>
+              <SliderItem>
+                {ImageSlider(sigma, 0.1, 0, 2, (sliderValue) =>
+                  setSigma(sliderValue),
+                )}
+                <SliderStatus>
+                  <SLiderLabel>Sigma :</SLiderLabel>
+                  <SliderValue>{Math.floor(sigma * 10) / 10}</SliderValue>
+                </SliderStatus>
+              </SliderItem>
+              <SliderItem>
+                {ImageSlider(lowThreshold, 1, 0, 100, (sliderValue) => {
+                  setLowThreshold(sliderValue);
+                })}
+                <SliderStatus>
+                  <SLiderLabel>Low Threshold :</SLiderLabel>
+                  <SliderValue>{lowThreshold}</SliderValue>
+                </SliderStatus>
+              </SliderItem>
+              <SliderItem>
+                {ImageSlider(highThreshold, 1, 0, 100, (sliderValue) => {
+                  setHighThreshold(sliderValue);
+                })}
+                <SliderStatus>
+                  <SLiderLabel>High Threshold :</SLiderLabel>
+                  <SliderValue>{highThreshold}</SliderValue>
+                </SliderStatus>
+              </SliderItem>
+            </Sliders>
+          )}
+        </SliderView>
+        <InfoButton onPress={() => setCurrentModal("infoModal")}>
+          <FontAwesome5 name="info-circle" size={50} color="black" />
+        </InfoButton>
+      </RightControlView>
       <ImageLoadModal
         animationType="slide"
         transparent={true}
@@ -176,7 +195,7 @@ const ImageProcessingScreen = ({ route, navigation }) => {
           setCurrentModal(null);
         }}>
         <View style={styles.centeredView}>
-          <View style={styles.modalView}>
+          <View style={styles.loadModalView}>
             <ModalView>
               <ModalButtonView>
                 <ModalButton
@@ -242,7 +261,7 @@ const ImageProcessingScreen = ({ route, navigation }) => {
           setInputUrlModal(false);
         }}>
         <View style={styles.centeredView}>
-          <View style={styles.modalView}>
+          <View style={styles.urlInputModalView}>
             <ModalView>
               <ModalButtonView>
                 <ModalButton
@@ -280,6 +299,69 @@ const ImageProcessingScreen = ({ route, navigation }) => {
           </View>
         </View>
       </ImageUrlInputModal>
+      <InfoModal
+        animationType="slide"
+        transparent={true}
+        visible={currentModal === "infoModal"}
+        onRequestClose={() => {
+          setCurrentModal(null);
+        }}>
+        <View style={styles.infoModalCenteredView}>
+          <View style={styles.infoModalView}>
+            <InfoModalTitle>{`채색 제거 기능 안내`}</InfoModalTitle>
+            <InfoModalSmallTitle>{"▸ Sigma "}</InfoModalSmallTitle>
+            <InfoModalText>
+              {"• Gaussian Blur 연산에 사용되는 값이다."}
+            </InfoModalText>
+            <InfoModalText>
+              {"• Blur처리를 통해 이미지의 노이즈를 제거한다."}
+            </InfoModalText>
+            <InfoModalText>
+              {"• Sigma 값이 커질수록 주위 경계가 불분명해진다."}
+            </InfoModalText>
+
+            <InfoModalText>{}</InfoModalText>
+            <InfoModalSmallTitle>
+              {"▸ Low Threshold & High Threshold"}
+            </InfoModalSmallTitle>
+            <InfoModalText>
+              {"• 픽셀 그래디언트의 상한과 하한을 정한다"}
+            </InfoModalText>
+            <InfoModalText>
+              {"• 픽셀 그래디언트는 픽셀 값이 변하는 정도를 말한다. "}
+            </InfoModalText>
+            <InfoModalText>
+              {"• 그래디언트가 높을수록 이미지의 경계에 가깝다. "}
+            </InfoModalText>
+            <InfoModalText>
+              {"• 값을 조정하여 경계를 인식하는 값의 범위를 정한다."}
+            </InfoModalText>
+            <InfoModalText>
+              {"• Low Threshold가 낮으면 노이즈가 많이 섞이고 "}
+            </InfoModalText>
+            <InfoModalText>
+              {"• High Threshold가 높으면 감지하는 경계가 줄어든다. "}
+            </InfoModalText>
+            <InfoModalText>{}</InfoModalText>
+            <InfoModalSmallTitle>
+              {"▸ Canny Edge Detection"}
+            </InfoModalSmallTitle>
+            <InfoModalText>
+              {"• 경계 감지 기술의 하나로 가장 많이 쓰이는 알고리즘"}
+            </InfoModalText>
+            <InfoModalText>
+              {"• Gaussian Blur처리를 통해 노이즈를 제거한 다음"}
+            </InfoModalText>
+            <InfoModalText>
+              {"•픽셀 그래디언트를 통해 경계를 감지한다."}
+            </InfoModalText>
+
+            <InfoModalCloseButton onPress={() => setCurrentModal(null)}>
+              <Feather name="x-circle" size={24} color="black" />
+            </InfoModalCloseButton>
+          </View>
+        </View>
+      </InfoModal>
     </Contatiner>
   );
 };
@@ -295,11 +377,19 @@ const styles = StyleSheet.create({
     marginBottom: 195,
     marginRight: 10,
   },
-  modalView: {
-    width: 580,
+  infoModalCenteredView: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+    marginRight: 145,
+  },
+  loadModalView: {
+    width: 300,
     height: 560,
     backgroundColor: "white",
     borderRadius: 20,
+    marginRight: 140,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -307,6 +397,36 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.75,
     shadowRadius: 4,
+  },
+  urlInputModalView: {
+    width: 580,
+    height: 560,
+    backgroundColor: "white",
+    borderRadius: 20,
+    marginRight: 140,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.75,
+    shadowRadius: 4,
+  },
+  infoModalView: {
+    width: "50%",
+    height: "91.1%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    paddingTop: 50,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
 
   controlButton: {
@@ -320,9 +440,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   preview: {
-    width: 580,
-    height: 580,
-    transform: [{ scale: 0.95 }],
+    width: 1051,
+    height: 759,
     resizeMode: "contain",
   },
 });
@@ -331,78 +450,66 @@ const Contatiner = styled.View`
   display: flex;
   height: 100%;
   width: 100%;
-`;
-
-const UpperMainView = styled.View`
-  height: 75%;
-  width: 100%;
-  background-color: white;
-  display: flex;
   flex-direction: row;
 `;
 
-const OriginalImageView = styled.View`
-  width: 50%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
-const ImageLoadButton = styled.Pressable`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 200px;
-  height: 200px;
+const LeftMainView = styled.View`
+  width: 88%;
+  background-color: white;
+  padding-top: 20px;
 `;
 
 const ProcessedImageView = styled(ViewShot)`
-  width: 50%;
+  width: 100%;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
 `;
 
-const DownerControlView = styled.View`
-  height: 25%;
-  width: 100%;
-
+const RightControlView = styled.View`
+  width: 12%;
   background-color: silver;
+  padding-top: 30px;
+  padding-bottom: 30px;
 
   display: flex;
+  align-items: center;
+`;
+
+const ButtonsView = styled.View`
+  width: 100%;
+  height: 47%;
+  display: flex;
+  align-items: center;
 `;
 
 const SliderView = styled.View`
   width: 100%;
-  height: 35%;
-  padding-top: 15px;
+  height: 45%;
 `;
 
 const Sliders = styled.View`
   display: flex;
-  flex-direction: row;
   align-items: center;
-  justify-content: center;
 `;
 
 const SliderItem = styled.View`
   display: flex;
   align-items: center;
-  margin: 0px 50px;
+  margin: 15px 0px;
 `;
 
 const SliderStatus = styled.View`
   display: flex;
   flex-direction: row;
   justify-content: center;
-  width: 200px;
+  width: 160px;
   padding-left: 15px;
 `;
 
 const SLiderLabel = styled.Text`
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   margin-right: 5px;
 `;
@@ -412,15 +519,6 @@ const SliderValue = styled.Text`
   font-weight: 600;
   color: blue;
   width: 30px;
-`;
-
-const ButtonsView = styled.View`
-  width: 100%;
-  height: 65%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  align-items: center;
 `;
 
 const ImageLoadModal = styled.Modal``;
@@ -500,4 +598,32 @@ const ImageUrlSaveButton = styled.Pressable`
 
 const ImageUrlSaveButtonText = styled.Text`
   font-size: 20px;
+`;
+
+const InfoModal = styled(Modal)``;
+
+const InfoButton = styled.Pressable``;
+
+const InfoModalTitle = styled(Text)`
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 42px;
+`;
+
+const InfoModalSmallTitle = styled(Text)`
+  margin-bottom: 10px;
+  font-size: 26px;
+`;
+
+const InfoModalText = styled(Text)`
+  margin-bottom: 10px;
+  font-size: 20px;
+  padding-left: 20px;
+`;
+
+const InfoModalCloseButton = styled(Pressable)`
+  align-self: flex-end;
+  position: absolute;
+  border-radius: 20px;
+  padding: 10px;
 `;

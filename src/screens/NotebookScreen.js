@@ -74,7 +74,7 @@ const NoteBookScreen = ({ route, navigation }) => {
                 previousId: notebookId,
               })
             }>
-            <MaterialCommunityIcons name="plus" size={60} color="black" />
+            <MaterialCommunityIcons name="plus" size={70} color="black" />
           </NewPictureButton>
           <LoadPictureButton
             onPress={() =>
@@ -85,7 +85,7 @@ const NoteBookScreen = ({ route, navigation }) => {
                 previousId: notebookId,
               })
             }>
-            <MaterialCommunityIcons name="image-edit" size={60} color="black" />
+            <MaterialCommunityIcons name="image-edit" size={70} color="black" />
           </LoadPictureButton>
         </TopButtons>
         <BottomButtons>
@@ -95,7 +95,7 @@ const NoteBookScreen = ({ route, navigation }) => {
             }}>
             <MaterialCommunityIcons
               name="notebook-remove"
-              size={60}
+              size={70}
               color="black"
             />
           </DeleteNotebookButton>

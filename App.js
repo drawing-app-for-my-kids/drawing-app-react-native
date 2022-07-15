@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import SplashScreen from "react-native-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -10,6 +11,17 @@ import ImageProcessingScreen from "./src/screens/ImageProcessingScreen";
 
 export default function App() {
   const Stack = createNativeStackNavigator();
+
+  useEffect(() => {
+    try {
+      setTimeout(() => {
+        SplashScreen.hide();
+      }, 5000);
+    } catch (error) {
+      console.warn("에러발생");
+      console.warn(error);
+    }
+  });
 
   return (
     <NavigationContainer>

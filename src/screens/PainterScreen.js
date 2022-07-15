@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components/native";
-import { View, StyleSheet, Text, Pressable, FlatList } from "react-native";
+import { View, StyleSheet, Pressable, FlatList } from "react-native";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -93,7 +93,6 @@ const PainterScreen = ({ route, navigation }) => {
     if (filePath) {
       await dispatchNotes(deletePictureFromNotebook(notebookId, pictureId));
       await deletePathFromDocumentDirectory(filePath);
-      console.log("삭제!");
     }
   };
 
@@ -119,14 +118,14 @@ const PainterScreen = ({ route, navigation }) => {
               await handleSave();
               navigation.goBack();
             }}>
-            <MaterialIcons name="save" size={80} color="black" />
+            <MaterialIcons name="save" size={72} color="black" />
           </SaveFileButton>
           <SaveCameraRollButton
             onPress={async () => {
               await handleSaveToCameraRoll();
               navigation.goBack();
             }}>
-            <MaterialCommunityIcons name="camera" size={80} color="black" />
+            <MaterialCommunityIcons name="camera" size={72} color="black" />
           </SaveCameraRollButton>
           <PenPickerButton
             onPress={() => {
@@ -137,12 +136,12 @@ const PainterScreen = ({ route, navigation }) => {
             }}>
             <MaterialCommunityIcons
               name={currentPenType}
-              size={80}
+              size={72}
               color="black"
             />
             {currentMode === "draw" && (
               <SelectedMark>
-                <FontAwesome5 name="check-circle" size={24} color="black" />
+                <FontAwesome5 name="check-circle" size={22} color="black" />
               </SelectedMark>
             )}
           </PenPickerButton>
@@ -152,7 +151,7 @@ const PainterScreen = ({ route, navigation }) => {
                 ? setCurrentModal(() => "colorModal")
                 : setCurrentModal(null);
             }}>
-            <MaterialIcons name="color-lens" size={80} color="black" />
+            <MaterialIcons name="color-lens" size={72} color="black" />
             <CurrentColorPreview
               style={{
                 backgroundColor: currentPenColor,
@@ -161,17 +160,17 @@ const PainterScreen = ({ route, navigation }) => {
             />
           </ColorPickerButton>
           <EraserPickerButton onPress={() => setCurrentMode(() => "erase")}>
-            <MaterialCommunityIcons name="eraser" size={80} color="black" />
+            <MaterialCommunityIcons name="eraser" size={72} color="black" />
             {currentMode === "erase" && (
               <SelectedMark>
-                <FontAwesome5 name="check-circle" size={24} color="black" />
+                <FontAwesome5 name="check-circle" size={22} color="black" />
               </SelectedMark>
             )}
           </EraserPickerButton>
           <UndoButton onPress={handleUndo}>
             <MaterialCommunityIcons
               name="undo-variant"
-              size={80}
+              size={72}
               color="black"
             />
           </UndoButton>
@@ -182,7 +181,7 @@ const PainterScreen = ({ route, navigation }) => {
             }}>
             <MaterialCommunityIcons
               name="delete-empty"
-              size={80}
+              size={72}
               color="black"
             />
           </DeleteButton>
@@ -254,7 +253,7 @@ const PainterScreen = ({ route, navigation }) => {
                 </PenModalTextBox>
               </PenModalView>
               <ModalCloseButton onPress={() => setCurrentModal(() => null)}>
-                <Feather name="x-circle" size={24} color="black" />
+                <Feather name="x-circle" size={22} color="black" />
               </ModalCloseButton>
             </View>
           </View>
@@ -394,8 +393,8 @@ const EraserPickerButton = styled.Pressable`
 
 const SelectedMark = styled.Text`
   position: absolute;
-  bottom: 1px;
-  right: 1px;
+  bottom: -8px;
+  right: -8px;
 `;
 
 const UndoButton = styled.Pressable``;
@@ -429,8 +428,8 @@ const ModalCloseButton = styled(Pressable)`
 
 const CurrentColorPreview = styled.Text`
   position: absolute;
-  right: 1px;
-  bottom: -1px;
+  right: -8px;
+  bottom: -8px;
   width: 24px;
   height: 24px;
   border-radius: 12px;

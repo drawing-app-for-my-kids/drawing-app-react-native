@@ -15,7 +15,6 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import Feather from "@expo/vector-icons/Feather";
-import IconButton from "../components/buttons/IconButton";
 import NoteBookItem from "../components/buttons/NoteBookItem";
 import bookCoverImageList from "../constants/bookCoverImageList";
 import { createNotebook } from "../store/actions/noteBookActions";
@@ -62,22 +61,21 @@ const HomeScreen = ({ navigation }) => {
         ) : (
           <Text
             style={{
-              paddingLeft: 20,
-              fontSize: 20,
+              paddingTop: 30,
+              paddingLeft: 30,
+              fontSize: 30,
             }}>
             노트북 목록이 없습니다.
           </Text>
         )}
       </LeftMainView>
       <RightControlView>
-        <NewButton
-          onPress={() => setCurrentModal("newNoteModal")}
-          icon={<MaterialCommunityIcons name="plus" size={60} color="black" />}
-        />
-        <InfoButton
-          onPress={() => setCurrentModal("infoModal")}
-          icon={<FontAwesome5 name="info-circle" size={44} color="black" />}
-        />
+        <NewButton onPress={() => setCurrentModal("newNoteModal")}>
+          <MaterialCommunityIcons name="plus" size={70} color="black" />
+        </NewButton>
+        <InfoButton onPress={() => setCurrentModal("infoModal")}>
+          <FontAwesome5 name="info-circle" size={50} color="black" />
+        </InfoButton>
         <NewNoteModal
           animationType="slide"
           transparent={true}
@@ -238,12 +236,15 @@ const RightControlView = styled.View`
   align-items: center;
 `;
 
-const NewButton = styled(IconButton)`
-  width: 80px;
-  height: 80px;
+const NewButton = styled.Pressable`
+  width: 120px;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
-const InfoButton = styled(IconButton)``;
+const InfoButton = styled.Pressable``;
 
 const ModalCloseButton = styled(Pressable)`
   align-self: flex-end;
