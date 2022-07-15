@@ -151,7 +151,7 @@ const SCanvas = (
         {loadImage && (
           <Image
             image={memoImage}
-            fit="contain"
+            fit="cover"
             x={resizeImageInfo.offsetX}
             y={resizeImageInfo.offsetY}
             width={resizeImageInfo.caculatedWidth}

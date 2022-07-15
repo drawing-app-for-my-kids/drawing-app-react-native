@@ -8,7 +8,7 @@ const CannyEdgeDetection = ({
   lowThreshold,
   highThreshold,
 }) => {
-  const gaussianKernelSize = new CvSize(9, 9);
+  const gaussianKernelSize = new CvSize(5, 5);
 
   return (
     <CvInvoke func="bitwise_not" params={{ p1: "dstMat", p2: "dstMat" }}>
@@ -52,9 +52,8 @@ export default CannyEdgeDetection;
 
 const styles = StyleSheet.create({
   preview: {
-    width: 580,
-    height: 580,
-    transform: [{ scale: 0.95 }],
-    resizeMode: "cover",
+    width: 1051,
+    height: 759,
+    resizeMode: "contain",
   },
 });

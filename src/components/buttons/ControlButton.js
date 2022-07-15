@@ -29,11 +29,12 @@ const Button = styled.Pressable`
   align-items: center;
 
   border: 1px solid black;
-  width: 180px;
-  height: 60px;
+  width: 120px;
+  height: 55px;
+  margin-bottom: 25px;
   border-radius: 10px;
 `;
 
 const ButtonText = styled.Text`
-  font-size: 30px;
+  font-size: 23px;
 `;

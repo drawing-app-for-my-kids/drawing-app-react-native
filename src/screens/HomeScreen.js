@@ -15,7 +15,6 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import Feather from "@expo/vector-icons/Feather";
-import IconButton from "../components/buttons/IconButton";
 import NoteBookItem from "../components/buttons/NoteBookItem";
 import bookCoverImageList from "../constants/bookCoverImageList";
 import { createNotebook } from "../store/actions/noteBookActions";
