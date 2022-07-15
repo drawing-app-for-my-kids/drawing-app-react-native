@@ -6,7 +6,6 @@ import {
   Image,
   Path,
   Paint,
-  DiscretePathEffect,
   DashPathEffect,
   Path1DPathEffect,
 } from "@shopify/react-native-skia";

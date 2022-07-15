@@ -70,14 +70,12 @@ const HomeScreen = ({ navigation }) => {
         )}
       </LeftMainView>
       <RightControlView>
-        <NewButton
-          onPress={() => setCurrentModal("newNoteModal")}
-          icon={<MaterialCommunityIcons name="plus" size={60} color="black" />}
-        />
-        <InfoButton
-          onPress={() => setCurrentModal("infoModal")}
-          icon={<FontAwesome5 name="info-circle" size={44} color="black" />}
-        />
+        <NewButton onPress={() => setCurrentModal("newNoteModal")}>
+          <MaterialCommunityIcons name="plus" size={70} color="black" />
+        </NewButton>
+        <InfoButton onPress={() => setCurrentModal("infoModal")}>
+          <FontAwesome5 name="info-circle" size={50} color="black" />
+        </InfoButton>
         <NewNoteModal
           animationType="slide"
           transparent={true}
@@ -238,12 +236,15 @@ const RightControlView = styled.View`
   align-items: center;
 `;
 
-const NewButton = styled(IconButton)`
-  width: 80px;
-  height: 80px;
+const NewButton = styled.Pressable`
+  width: 120px;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
-const InfoButton = styled(IconButton)``;
+const InfoButton = styled.Pressable``;
 
 const ModalCloseButton = styled(Pressable)`
   align-self: flex-end;

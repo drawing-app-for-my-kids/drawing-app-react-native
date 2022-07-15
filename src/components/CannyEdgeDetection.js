@@ -55,6 +55,6 @@ const styles = StyleSheet.create({
     width: 580,
     height: 580,
     transform: [{ scale: 0.95 }],
-    resizeMode: "contain",
+    resizeMode: "cover",
   },
 });
