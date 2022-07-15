@@ -61,8 +61,9 @@ const HomeScreen = ({ navigation }) => {
         ) : (
           <Text
             style={{
-              paddingLeft: 20,
-              fontSize: 20,
+              paddingTop: 30,
+              paddingLeft: 30,
+              fontSize: 30,
             }}>
             노트북 목록이 없습니다.
           </Text>
