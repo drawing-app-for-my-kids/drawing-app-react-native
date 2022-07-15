@@ -79,6 +79,10 @@ Start the server
 
 [![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs)
 
+## 참고사항
+
+- [Expo CLI 개발 시점까지 사용했던 github 저장소 링크](https://github.com/apotatos11/drawing-app-for-my-kids)
+
 ## 만든 사람
 
 - 남원일 / apotatos11dev@gmail.com
