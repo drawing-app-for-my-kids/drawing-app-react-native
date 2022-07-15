@@ -308,13 +308,52 @@ const ImageProcessingScreen = ({ route, navigation }) => {
         }}>
         <View style={styles.infoModalCenteredView}>
           <View style={styles.infoModalView}>
-            <InfoModalTitle>{`◎ 채색 제거 기능 안내`}</InfoModalTitle>
-            <InfoModalText>{"• 시그마"}</InfoModalText>
-            <InfoModalText>{": 가우시안 블러 처리에 활용"}</InfoModalText>
-            <InfoModalText>{"• Low Threshold"}</InfoModalText>
-            <InfoModalText>{"• High Threshold"}</InfoModalText>
+            <InfoModalTitle>{`채색 제거 기능 안내`}</InfoModalTitle>
+            <InfoModalSmallTitle>{"▸ Sigma "}</InfoModalSmallTitle>
             <InfoModalText>
-              {": 픽셀 그래디언트의 상한과 하한을 정한다"}
+              {"• Gaussian Blur 연산에 사용되는 값이다."}
+            </InfoModalText>
+            <InfoModalText>
+              {"• Blur처리를 통해 이미지의 노이즈를 제거한다."}
+            </InfoModalText>
+            <InfoModalText>
+              {"• Sigma 값이 커질수록 주위 경계가 불분명해진다."}
+            </InfoModalText>
+
+            <InfoModalText>{}</InfoModalText>
+            <InfoModalSmallTitle>
+              {"▸ Low Threshold & High Threshold"}
+            </InfoModalSmallTitle>
+            <InfoModalText>
+              {"• 픽셀 그래디언트의 상한과 하한을 정한다"}
+            </InfoModalText>
+            <InfoModalText>
+              {"• 픽셀 그래디언트는 픽셀 값이 변하는 정도를 말한다. "}
+            </InfoModalText>
+            <InfoModalText>
+              {"• 그래디언트가 높을수록 이미지의 경계에 가깝다. "}
+            </InfoModalText>
+            <InfoModalText>
+              {"• 값을 조정하여 경계를 인식하는 값의 범위를 정한다."}
+            </InfoModalText>
+            <InfoModalText>
+              {"• Low Threshold가 낮으면 노이즈가 많이 섞이고 "}
+            </InfoModalText>
+            <InfoModalText>
+              {"• High Threshold가 높으면 감지하는 경계가 줄어든다. "}
+            </InfoModalText>
+            <InfoModalText>{}</InfoModalText>
+            <InfoModalSmallTitle>
+              {"▸ Canny Edge Detection"}
+            </InfoModalSmallTitle>
+            <InfoModalText>
+              {"• 경계 감지 기술의 하나로 가장 많이 쓰이는 알고리즘"}
+            </InfoModalText>
+            <InfoModalText>
+              {"• Gaussian Blur처리를 통해 노이즈를 제거한 다음"}
+            </InfoModalText>
+            <InfoModalText>
+              {"•픽셀 그래디언트를 통해 경계를 감지한다."}
             </InfoModalText>
 
             <InfoModalCloseButton onPress={() => setCurrentModal(null)}>
@@ -571,9 +610,15 @@ const InfoModalTitle = styled(Text)`
   font-size: 42px;
 `;
 
+const InfoModalSmallTitle = styled(Text)`
+  margin-bottom: 10px;
+  font-size: 26px;
+`;
+
 const InfoModalText = styled(Text)`
-  margin-bottom: 5px;
-  font-size: 28px;
+  margin-bottom: 10px;
+  font-size: 20px;
+  padding-left: 20px;
 `;
 
 const InfoModalCloseButton = styled(Pressable)`
