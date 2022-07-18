@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import styled from "styled-components/native";
 import { View, StyleSheet, Pressable, FlatList } from "react-native";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -35,21 +35,27 @@ const PainterScreen = ({ route, navigation }) => {
   const pictureId = route.params.item ? route.params.item._id : null;
   const notebookId = route.params.notebookId;
 
-  const handleCurrentElemets = (newElement) =>
-    setCurrentElements((prevState) => {
-      return [...prevState, newElement];
-    });
+  const handleCurrentElemets = useCallback(
+    (newElement) =>
+      setCurrentElements((prevState) => {
+        return [...prevState, newElement];
+      }),
+    [],
+  );
 
-  const handlePrevElementsLengthList = (elementLength) => {
-    setPrevElementsLengthList([...prevElementsLengthList, elementLength]);
-  };
+  const handlePrevElementsLengthList = useCallback(
+    (elementLength) => {
+      setPrevElementsLengthList([...prevElementsLengthList, elementLength]);
+    },
+    [prevElementsLengthList],
+  );
 
   const handleUndo = () => {
-    const redoElements = currentElements.slice(
+    const undoElements = currentElements.slice(
       0,
       prevElementsLengthList[prevElementsLengthList.length - 1],
     );
-    setCurrentElements(redoElements);
+    setCurrentElements(undoElements);
     setPrevElementsLengthList(
       prevElementsLengthList.slice(0, prevElementsLengthList.length - 1),
     );

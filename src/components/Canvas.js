@@ -6,8 +6,6 @@ import {
   Image,
   Path,
   Paint,
-  DashPathEffect,
-  Path1DPathEffect,
 } from "@shopify/react-native-skia";
 
 import { resizeImageInfoMake } from "../utils/painterHelper";
@@ -35,7 +33,7 @@ const SCanvas = (
     : null;
 
   const touchHandler = useTouchDrawing(
-    currentElements,
+    currentElements.length,
     currentMode,
     currentPenColor,
     currentPenType,
@@ -95,14 +93,8 @@ const SCanvas = (
                     color={element.color}
                     style="stroke"
                     strokeWidth={element.size}
-                    strokeCap="round">
-                    <Path1DPathEffect
-                      path="M -10 0 L 0 -10, 10 0, 0 10 Z"
-                      advance={20}
-                      phase={0}
-                      style="rotate"
-                    />
-                  </Path>
+                    strokeCap="round"
+                  />
                 );
               case "spray":
                 return (
@@ -112,9 +104,8 @@ const SCanvas = (
                     color={element.color}
                     style="stroke"
                     strokeWidth={element.size}
-                    strokeCap="round">
-                    <DashPathEffect intervals={[10, 30]} />
-                  </Path>
+                    strokeCap="round"
+                  />
                 );
               case "erasing":
                 return (

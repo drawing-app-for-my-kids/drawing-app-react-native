@@ -5,7 +5,7 @@ import { penSize } from "../constants/painterOptions";
 import { createPath } from "../utils/painterHelper";
 
 const useTouchDrawing = (
-  currentElements,
+  currentElementsLength,
   currentMode,
   currentPenColor,
   currentPenType,
@@ -22,13 +22,16 @@ const useTouchDrawing = (
       onStart: ({ x, y }) => {
         if (isDrawing) return;
 
+        const flooredX = Math.floor(x);
+        const flooredY = Math.floor(y);
+
         setDrawing(true);
         switch (currentMode) {
           case undefined:
           case "draw": {
             currentPath.current = createPath(
-              x,
-              y,
+              flooredX,
+              flooredY,
               currentPenColor,
               penSize[currentPenType],
               currentPenType,
@@ -38,8 +41,8 @@ const useTouchDrawing = (
           }
           case "erase": {
             currentPath.current = createPath(
-              x,
-              y,
+              flooredX,
+              flooredY,
               currentPenColor,
               penSize[currentPenType],
               "erasing",
@@ -50,15 +53,20 @@ const useTouchDrawing = (
           default:
             break;
         }
-        prevPointRef.current = { x, y };
+        prevPointRef.current = { x: flooredX, y: flooredY };
       },
 
       onActive: ({ x, y }) => {
+        if (!isDrawing) return;
+
+        const flooredX = Math.floor(x);
+        const flooredY = Math.floor(y);
+
         switch (currentMode) {
           case undefined:
           case "draw": {
-            const xMid = (prevPointRef.current.x + x) / 2;
-            const yMid = (prevPointRef.current.y + y) / 2;
+            const xMid = (prevPointRef.current.x + flooredX) / 2;
+            const yMid = (prevPointRef.current.y + flooredY) / 2;
             currentPath.current.path.quadTo(
               prevPointRef.current.x,
               prevPointRef.current.y,
@@ -72,8 +80,8 @@ const useTouchDrawing = (
           }
 
           case "erase": {
-            const xMid = (prevPointRef.current.x + x) / 2;
-            const yMid = (prevPointRef.current.y + y) / 2;
+            const xMid = (prevPointRef.current.x + flooredX) / 2;
+            const yMid = (prevPointRef.current.y + flooredY) / 2;
             currentPath.current.path.quadTo(
               prevPointRef.current.x,
               prevPointRef.current.y,
@@ -89,12 +97,13 @@ const useTouchDrawing = (
           default:
             break;
         }
-        prevPointRef.current = { x, y };
+        prevPointRef.current = { x: flooredX, y: flooredY };
       },
 
       onEnd: () => {
+        if (!isDrawing) return;
         currentPath.current = null;
-        handlePrevElementsLengthList(currentElements.length);
+        handlePrevElementsLengthList(currentElementsLength);
         setDrawing(false);
       },
     },
