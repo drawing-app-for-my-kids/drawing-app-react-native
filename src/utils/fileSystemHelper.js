@@ -167,6 +167,22 @@ export const copyProcessImageFileToCacheDirectory = async (
   }
 };
 
+export const copyLoadImageFileToCacheDirectory = async (loadImageFilePath) => {
+  try {
+    await FileSystem.copyAsync({
+      from: loadImageFilePath,
+      to: temporaryPictureUri,
+    });
+
+    console.log("처리이미지 경로", loadImageFilePath);
+    console.log("대상 임시파일 경로", temporaryPictureUri);
+    const result = await FileSystem.getInfoAsync(temporaryPictureUri);
+    console.log("이미지 처리 파일 덮어쓰기 성공!", result.exists);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const copyMainFolder = async (processImageFilePath) => {
   try {
     await FileSystem.copyAsync({

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useRef } from "react";
 import styled from "styled-components/native";
 import { View, StyleSheet, Pressable, FlatList } from "react-native";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";

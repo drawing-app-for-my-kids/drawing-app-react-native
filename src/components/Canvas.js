@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useState,
   useEffect,
+  useLayoutEffect,
 } from "react";
 import { StyleSheet } from "react-native";
 import {
@@ -15,12 +16,12 @@ import {
   Paint,
 } from "@shopify/react-native-skia";
 
-import { makeImageFile, filePathMaker } from "../utils/fileSystemHelper";
 import {
-  addPictureToNotebook,
-  updatePicture,
-} from "../store/actions/noteBookActions";
-import { dispatchNotes } from "../store/index";
+  makeImageFile,
+  copyLoadImageFileToCacheDirectory,
+  temporaryPictureUri,
+} from "../utils/fileSystemHelper";
+
 import { resizeImageInfoMake } from "../utils/painterHelper";
 import useTouchDrawing from "../hooks/useTouchDrawing";
 
@@ -34,9 +35,11 @@ const SCanvas = (
   const [canvasElements, setCanvasElements] = useState([]);
   const [prevCanvasElementLengthList, setPrevCanvasElementLengthList] =
     useState([]);
-  const [currentImage, setCurrentImage] = useState(filePath);
+  const [currentImage, setCurrentImage] = useState(temporaryPictureUri);
+  const [, updateState] = useState();
+  const forceUpdate = useCallback(() => updateState({}), []);
 
-  const loadImage = useImage(currentImage);
+  const loadImage = currentImage ? useImage(currentImage) : null;
   const resizeImageInfo = useMemo(() => {
     if (loadImage) {
       return resizeImageInfoMake(
@@ -88,33 +91,38 @@ const SCanvas = (
         height={imageInfo.caculatedHeight}
       />
     ),
-    [canvasElements],
+    [],
   );
 
-  const handleTempSave = async () => {
+  const handleTempSave = useCallback(async () => {
     const image = ref.current.makeImageSnapshot();
     if (image) {
-      if (loadImage === null) {
-        const newDate = new Date();
-        const newPictureId = "picture" + newDate.getTime();
-        const newFilePath = filePathMaker(notebookId, newPictureId);
-
-        const newPictureInfo = {
-          _id: newPictureId,
-          createdAt: newDate,
-          updatedAt: newDate,
-          filePath: newFilePath,
-        };
-        const base64File = image.encodeToBase64();
-        await dispatchNotes(addPictureToNotebook(notebookId, newPictureInfo));
-        await makeImageFile(newFilePath, base64File);
-      } else {
-        const base64File = image.encodeToBase64();
-        // await dispatchNotes(updatePicture(notebookId, pictureId));
-        await makeImageFile(filePath, base64File);
-      }
+      const base64File = image.encodeToBase64();
+      await makeImageFile(temporaryPictureUri, base64File);
     }
-  };
+  }, [ref]);
+
+  useLayoutEffect(() => {
+    const makeTempImageFile = async () => {
+      await copyLoadImageFileToCacheDirectory(filePath);
+    };
+
+    makeTempImageFile();
+  }, [filePath]);
+
+  useEffect(() => {
+    const batchProcess = async () => {
+      await handleTempSave();
+      setTimeout(() => setCurrentImage(temporaryPictureUri), 1000);
+      setTimeout(() => setCanvasElements([]), 1000);
+      setTimeout(() => setPrevCanvasElementLengthList([]), 1000);
+    };
+
+    if (prevCanvasElementLengthList.length > 3) {
+      console.log("hi");
+      batchProcess();
+    }
+  }, [prevCanvasElementLengthList, canvasElements, handleTempSave]);
 
   useEffect(() => {
     ref.current.handleDeleteLastElement = () => {
@@ -132,17 +140,6 @@ const SCanvas = (
       );
     };
   }, [ref, canvasElements, prevCanvasElementLengthList]);
-
-  // useEffect(() => {
-  //   if (prevCanvasElementLengthList.length > 3) {
-  //     console.log("hi");
-  //     handleTempSave();
-  //     setCanvasElements([]);
-  //     setPrevCanvasElementLengthList([]);
-  //   }
-  // }, [prevCanvasElementLengthList, canvasElements]);
-  // //prevCanvasElement의 마지막 길이가 특정 이상이면
-  // // 현재 캔버스 저장하고, 엘리먼트 갯수 줄인다.
 
   return (
     <Fragment>
