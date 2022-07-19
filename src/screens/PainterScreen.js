@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import styled from "styled-components/native";
 import { View, StyleSheet, Pressable, FlatList } from "react-native";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -8,7 +8,6 @@ import Feather from "@expo/vector-icons/Feather";
 import ColorButtonItem from "../components/buttons/ColorButton";
 import { colorList } from "../constants/painterOptions";
 import { SkiaCanvas } from "../components/Canvas";
-import { useCanvasRef } from "@shopify/react-native-skia";
 import {
   makeImageFile,
   deletePathFromDocumentDirectory,
@@ -27,39 +26,13 @@ const PainterScreen = ({ route, navigation }) => {
   const [currentMode, setCurrentMode] = useState("draw");
   const [currentPenType, setCurrentPenType] = useState("grease-pencil");
   const [currentPenColor, setCurrentPenColor] = useState("black");
-  const [currentElements, setCurrentElements] = useState([]);
-  const [prevElementsLengthList, setPrevElementsLengthList] = useState([]);
-  const canvasRef = useCanvasRef();
+  const canvasRef = useRef(null);
 
   const filePath = route.params.item ? route.params.item.filePath : null;
   const pictureId = route.params.item ? route.params.item._id : null;
   const notebookId = route.params.notebookId;
 
-  const handleCurrentElemets = useCallback(
-    (newElement) =>
-      setCurrentElements((prevState) => {
-        return [...prevState, newElement];
-      }),
-    [],
-  );
-
-  const handlePrevElementsLengthList = useCallback(
-    (elementLength) => {
-      setPrevElementsLengthList([...prevElementsLengthList, elementLength]);
-    },
-    [prevElementsLengthList],
-  );
-
-  const handleUndo = () => {
-    const undoElements = currentElements.slice(
-      0,
-      prevElementsLengthList[prevElementsLengthList.length - 1],
-    );
-    setCurrentElements(undoElements);
-    setPrevElementsLengthList(
-      prevElementsLengthList.slice(0, prevElementsLengthList.length - 1),
-    );
-  };
+  console.log(canvasRef.current);
 
   const handleSave = async () => {
     const image = canvasRef.current.makeImageSnapshot();
@@ -106,15 +79,11 @@ const PainterScreen = ({ route, navigation }) => {
     <Contatiner>
       <LeftMainView>
         <SkiaCanvas
-          ref={canvasRef}
           filePath={filePath}
-          currentElements={currentElements}
           currentMode={currentMode}
           currentPenColor={currentPenColor}
           currentPenType={currentPenType}
-          prevElementsLengthList={prevElementsLengthList}
-          handleCurrentElemets={handleCurrentElemets}
-          handlePrevElementsLengthList={handlePrevElementsLengthList}
+          ref={canvasRef}
         />
       </LeftMainView>
       <RightControlView>
@@ -173,7 +142,10 @@ const PainterScreen = ({ route, navigation }) => {
               </SelectedMark>
             )}
           </EraserPickerButton>
-          <UndoButton onPress={handleUndo}>
+          <UndoButton
+            onPress={() => {
+              canvasRef.current.handleDeleteLastElement();
+            }}>
             <MaterialCommunityIcons
               name="undo-variant"
               size={72}
