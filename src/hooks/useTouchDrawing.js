@@ -76,7 +76,15 @@ const useTouchDrawing = (
             yMid,
           );
 
-          handleCurrentElemets(currentPath.current);
+          const newElement = {
+            type: currentPath.current.path.type,
+            path: currentPath.current.path.toSVGString(),
+            color: currentPath.current.color,
+            size: currentPath.current.size,
+            pathType: currentPath.current.pathType,
+          };
+
+          handleCurrentElemets(newElement);
 
           break;
         }
@@ -91,7 +99,15 @@ const useTouchDrawing = (
             yMid,
           );
 
-          handleCurrentElemets(currentPath.current);
+          const newElement = {
+            type: currentPath.current.path.type,
+            path: currentPath.current.path.toSVGString(),
+            color: currentPath.current.color,
+            size: currentPath.current.size,
+            pathType: currentPath.current.pathType,
+          };
+
+          handleCurrentElemets(newElement);
 
           break;
         }

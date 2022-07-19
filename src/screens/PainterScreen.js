@@ -8,6 +8,7 @@ import Feather from "@expo/vector-icons/Feather";
 import ColorButtonItem from "../components/buttons/ColorButton";
 import { colorList } from "../constants/painterOptions";
 import { SkiaCanvas } from "../components/Canvas";
+import { SkiaEmptyCanvas } from "../components/EmptyCanvas";
 import {
   makeImageFile,
   deletePathFromDocumentDirectory,
@@ -78,13 +79,23 @@ const PainterScreen = ({ route, navigation }) => {
   return (
     <Contatiner>
       <LeftMainView>
-        <SkiaCanvas
-          filePath={filePath}
-          currentMode={currentMode}
-          currentPenColor={currentPenColor}
-          currentPenType={currentPenType}
-          ref={canvasRef}
-        />
+        {filePath && (
+          <SkiaCanvas
+            filePath={filePath}
+            currentMode={currentMode}
+            currentPenColor={currentPenColor}
+            currentPenType={currentPenType}
+            ref={canvasRef}
+          />
+        )}
+        {!filePath && (
+          <SkiaEmptyCanvas
+            currentMode={currentMode}
+            currentPenColor={currentPenColor}
+            currentPenType={currentPenType}
+            ref={canvasRef}
+          />
+        )}
       </LeftMainView>
       <RightControlView>
         <ButtonsView>

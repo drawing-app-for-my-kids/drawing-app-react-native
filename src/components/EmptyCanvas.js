@@ -21,33 +21,15 @@ import {
   updatePicture,
 } from "../store/actions/noteBookActions";
 import { dispatchNotes } from "../store/index";
-import { resizeImageInfoMake } from "../utils/painterHelper";
 import useTouchDrawing from "../hooks/useTouchDrawing";
 
-const MAX_CANVAS_WIDTH = 1051;
-const MAX_CANVAS_HEIGHT = 759;
-
 const SCanvas = (
-  { filePath, currentMode, currentPenColor, currentPenType, notebookId },
+  { currentMode, currentPenColor, currentPenType, notebookId },
   ref,
 ) => {
   const [canvasElements, setCanvasElements] = useState([]);
   const [prevCanvasElementLengthList, setPrevCanvasElementLengthList] =
     useState([]);
-  const [currentImage, setCurrentImage] = useState(filePath);
-
-  const loadImage = useImage(currentImage);
-  const resizeImageInfo = useMemo(() => {
-    if (loadImage) {
-      return resizeImageInfoMake(
-        loadImage,
-        MAX_CANVAS_WIDTH,
-        MAX_CANVAS_HEIGHT,
-      );
-    } else {
-      return null;
-    }
-  }, [loadImage]);
 
   const handleCanvasElemets = useCallback(
     (newElement) =>
@@ -56,6 +38,8 @@ const SCanvas = (
       }),
     [],
   );
+
+  console.log("empty Canvas");
 
   const handlePrevCanvasElementLengthList = useCallback(
     (elementLength) => {
@@ -88,7 +72,7 @@ const SCanvas = (
         height={imageInfo.caculatedHeight}
       />
     ),
-    [canvasElements],
+    [],
   );
 
   const handleTempSave = async () => {
@@ -110,7 +94,7 @@ const SCanvas = (
         await makeImageFile(newFilePath, base64File);
       } else {
         const base64File = image.encodeToBase64();
-        // await dispatchNotes(updatePicture(notebookId, pictureId));
+        await dispatchNotes(updatePicture(notebookId, pictureId));
         await makeImageFile(filePath, base64File);
       }
     }
@@ -133,21 +117,20 @@ const SCanvas = (
     };
   }, [ref, canvasElements, prevCanvasElementLengthList]);
 
-  // useEffect(() => {
-  //   if (prevCanvasElementLengthList.length > 3) {
-  //     console.log("hi");
-  //     handleTempSave();
-  //     setCanvasElements([]);
-  //     setPrevCanvasElementLengthList([]);
-  //   }
-  // }, [prevCanvasElementLengthList, canvasElements]);
-  // //prevCanvasElement의 마지막 길이가 특정 이상이면
-  // // 현재 캔버스 저장하고, 엘리먼트 갯수 줄인다.
+  useEffect(() => {
+    const lastElementLength =
+      prevCanvasElementLengthList[prevCanvasElementLengthList.length - 1];
+
+    if (prevCanvasElementLengthList.length > 3) {
+      console.log("hi");
+    }
+  }, [prevCanvasElementLengthList]);
+  //prevCanvasElement의 마지막 길이가 특정 이상이면
+  // 현재 캔버스 저장하고, 엘리먼트 갯수 줄인다.
 
   return (
     <Fragment>
       <Canvas style={styles.canvas} onTouch={touchHandler} ref={ref}>
-        {loadImage && LoadImage(loadImage, resizeImageInfo)}
         {canvasElements.map((element, index) => {
           switch (element.type) {
             case "image":
@@ -240,7 +223,7 @@ const SCanvas = (
   );
 };
 
-export const SkiaCanvas = forwardRef(SCanvas);
+export const SkiaEmptyCanvas = forwardRef(SCanvas);
 
 const styles = StyleSheet.create({
   canvas: {
