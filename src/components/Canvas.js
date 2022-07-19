@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo, forwardRef } from "react";
+import React, { Fragment, useMemo, forwardRef, useCallback } from "react";
 import { StyleSheet } from "react-native";
 import {
   Canvas,
@@ -28,9 +28,17 @@ const SCanvas = (
   ref,
 ) => {
   const loadImage = filePath ? useImage(filePath) : null;
-  const resizeImageInfo = loadImage
-    ? resizeImageInfoMake(loadImage, MAX_CANVAS_WIDTH, MAX_CANVAS_HEIGHT)
-    : null;
+  const resizeImageInfo = useMemo(() => {
+    if (loadImage) {
+      return resizeImageInfoMake(
+        loadImage,
+        MAX_CANVAS_WIDTH,
+        MAX_CANVAS_HEIGHT,
+      );
+    } else {
+      return null;
+    }
+  }, [loadImage]);
 
   const touchHandler = useTouchDrawing(
     currentElements.length,
@@ -42,114 +50,111 @@ const SCanvas = (
     handlePrevElementsLengthList,
   );
 
-  const memoImage = useMemo(() => loadImage, [loadImage]);
-
-  const elementComponents = useMemo(
-    () =>
-      currentElements.map((element, index) => {
-        switch (element.type) {
-          case "image":
-            return <Image fit="fill" key={index} image={element.image} />;
-          default:
-            switch (element.pathType) {
-              case "lead-pencil":
-                return (
-                  <Path
-                    key={index}
-                    path={element.path}
-                    color={element.color}
-                    style="stroke"
-                    strokeWidth={element.size}
-                    strokeCap="round"
-                  />
-                );
-              case "grease-pencil":
-                return (
-                  <Path
-                    key={index}
-                    path={element.path}
-                    color={element.color}
-                    style="stroke"
-                    strokeWidth={element.size}
-                    strokeCap="round"
-                  />
-                );
-              case "brush":
-                return (
-                  <Path
-                    key={index}
-                    path={element.path}
-                    color={element.color}
-                    style="stroke"
-                    strokeWidth={element.size}
-                    strokeCap="round"
-                  />
-                );
-              case "format-paint":
-                return (
-                  <Path
-                    key={index}
-                    path={element.path}
-                    color={element.color}
-                    style="stroke"
-                    strokeWidth={element.size}
-                    strokeCap="round"
-                  />
-                );
-              case "spray":
-                return (
-                  <Path
-                    key={index}
-                    path={element.path}
-                    color={element.color}
-                    style="stroke"
-                    strokeWidth={element.size}
-                    strokeCap="round"
-                  />
-                );
-              case "erasing":
-                return (
-                  <Path
-                    key={index}
-                    path={element.path}
-                    color="white"
-                    style="stroke"
-                    strokeWidth={9}
-                    strokeCap="round">
-                    <Paint blendMode="clear" />
-                  </Path>
-                );
-              default:
-                return (
-                  <Path
-                    key={index}
-                    path={element.path}
-                    color={element.color}
-                    style="stroke"
-                    strokeWidth={element.size}
-                    strokeCap="round"
-                  />
-                );
-            }
-        }
-      }),
-    [currentElements],
+  const LoadImage = useCallback(
+    (imageInput, imageInfo) => (
+      <Image
+        image={imageInput}
+        fit="cover"
+        x={imageInfo.offsetX}
+        y={imageInfo.offsetY}
+        width={imageInfo.caculatedWidth}
+        height={imageInfo.caculatedHeight}
+      />
+    ),
+    [],
   );
 
   return (
     <Fragment>
       <Canvas style={styles.canvas} onTouch={touchHandler} ref={ref}>
-        {loadImage && (
-          <Image
-            image={memoImage}
-            fit="cover"
-            x={resizeImageInfo.offsetX}
-            y={resizeImageInfo.offsetY}
-            width={resizeImageInfo.caculatedWidth}
-            height={resizeImageInfo.caculatedHeight}
-          />
-        )}
-        {elementComponents}
+        {loadImage && LoadImage(loadImage, resizeImageInfo)}
+        {currentElements.map((element, index) => {
+          switch (element.type) {
+            case "image":
+              return <Image fit="fill" key={index} image={element.image} />;
+            default:
+              switch (element.pathType) {
+                case "lead-pencil":
+                  return (
+                    <Path
+                      key={index}
+                      path={element.path}
+                      color={element.color}
+                      style="stroke"
+                      strokeWidth={element.size}
+                      strokeCap="round"
+                    />
+                  );
+                case "grease-pencil":
+                  return (
+                    <Path
+                      key={index}
+                      path={element.path}
+                      color={element.color}
+                      style="stroke"
+                      strokeWidth={element.size}
+                      strokeCap="round"
+                    />
+                  );
+                case "brush":
+                  return (
+                    <Path
+                      key={index}
+                      path={element.path}
+                      color={element.color}
+                      style="stroke"
+                      strokeWidth={element.size}
+                      strokeCap="round"
+                    />
+                  );
+                case "format-paint":
+                  return (
+                    <Path
+                      key={index}
+                      path={element.path}
+                      color={element.color}
+                      style="stroke"
+                      strokeWidth={element.size}
+                      strokeCap="round"
+                    />
+                  );
+                case "spray":
+                  return (
+                    <Path
+                      key={index}
+                      path={element.path}
+                      color={element.color}
+                      style="stroke"
+                      strokeWidth={element.size}
+                      strokeCap="round"
+                    />
+                  );
+                case "erasing":
+                  return (
+                    <Path
+                      key={index}
+                      path={element.path}
+                      color="white"
+                      style="stroke"
+                      strokeWidth={9}
+                      strokeCap="round">
+                      <Paint blendMode="clear" />
+                    </Path>
+                  );
+                default:
+                  return (
+                    <Path
+                      key={index}
+                      path={element.path}
+                      color={element.color}
+                      style="stroke"
+                      strokeWidth={element.size}
+                      strokeCap="round"
+                    />
+                  );
+              }
+          }
+        })}
       </Canvas>
     </Fragment>
   );

@@ -165,7 +165,7 @@ const PainterScreen = ({ route, navigation }) => {
               }}
             />
           </ColorPickerButton>
-          <EraserPickerButton onPress={() => setCurrentMode(() => "erase")}>
+          <EraserPickerButton onPress={() => setCurrentMode("erase")}>
             <MaterialCommunityIcons name="eraser" size={72} color="black" />
             {currentMode === "erase" && (
               <SelectedMark>
@@ -216,7 +216,7 @@ const PainterScreen = ({ route, navigation }) => {
                 <PenModalTextBox
                   onPress={() => {
                     setCurrentModal(null);
-                    setCurrentPenType(() => "grease-pencil");
+                    setCurrentPenType("grease-pencil");
                   }}>
                   <MaterialCommunityIcons
                     name="grease-pencil"
@@ -227,7 +227,7 @@ const PainterScreen = ({ route, navigation }) => {
                 <PenModalTextBox
                   onPress={() => {
                     setCurrentModal(null);
-                    setCurrentPenType(() => "brush");
+                    setCurrentPenType("brush");
                   }}>
                   <MaterialCommunityIcons
                     name="brush"
@@ -238,7 +238,7 @@ const PainterScreen = ({ route, navigation }) => {
                 <PenModalTextBox
                   onPress={() => {
                     setCurrentModal(null);
-                    setCurrentPenType(() => "format-paint");
+                    setCurrentPenType("format-paint");
                   }}>
                   <MaterialCommunityIcons
                     name="format-paint"
@@ -249,7 +249,7 @@ const PainterScreen = ({ route, navigation }) => {
                 <PenModalTextBox
                   onPress={() => {
                     setCurrentModal(null);
-                    setCurrentPenType(() => "spray");
+                    setCurrentPenType("spray");
                   }}>
                   <MaterialCommunityIcons
                     name="spray"
@@ -258,7 +258,7 @@ const PainterScreen = ({ route, navigation }) => {
                   />
                 </PenModalTextBox>
               </PenModalView>
-              <ModalCloseButton onPress={() => setCurrentModal(() => null)}>
+              <ModalCloseButton onPress={() => setCurrentModal(null)}>
                 <Feather name="x-circle" size={22} color="black" />
               </ModalCloseButton>
             </View>
@@ -269,7 +269,7 @@ const PainterScreen = ({ route, navigation }) => {
           transparent={true}
           visible={currentModal === "colorModal"}
           onRequestClose={() => {
-            setCurrentModal(() => null);
+            setCurrentModal(null);
           }}>
           <View style={styles.colorCenteredView}>
             <View style={styles.colorModalView}>
@@ -279,8 +279,8 @@ const PainterScreen = ({ route, navigation }) => {
                   <ColorButtonItem
                     color={item}
                     PressHandler={(color) => {
-                      setCurrentPenColor(() => color);
-                      setCurrentModal(() => null);
+                      setCurrentPenColor(color);
+                      setCurrentModal(null);
                     }}
                   />
                 )}
@@ -288,7 +288,7 @@ const PainterScreen = ({ route, navigation }) => {
                 numColumns={7}
                 style={{ width: 400, height: 400 }}
               />
-              <ModalCloseButton onPress={() => setCurrentModal(() => null)}>
+              <ModalCloseButton onPress={() => setCurrentModal(null)}>
                 <Feather name="x-circle" size={24} color="black" />
               </ModalCloseButton>
             </View>
