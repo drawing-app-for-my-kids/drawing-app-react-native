@@ -1,11 +1,11 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useTouchHandler } from "@shopify/react-native-skia";
 
 import { penSize } from "../constants/painterOptions";
 import { createPath } from "../utils/painterHelper";
 
 const useTouchDrawing = (
-  currentElements,
+  currentElementsLength,
   currentMode,
   currentPenColor,
   currentPenType,
@@ -17,86 +17,122 @@ const useTouchDrawing = (
   const currentPath = useRef(null);
   const prevPointRef = useRef(null);
 
+  const touchStart = useCallback(
+    ({ x, y }) => {
+      if (isDrawing) return;
+
+      const flooredX = Math.floor(x);
+      const flooredY = Math.floor(y);
+
+      setDrawing(true);
+      switch (currentMode) {
+        case undefined:
+        case "draw": {
+          currentPath.current = createPath(
+            flooredX,
+            flooredY,
+            currentPenColor,
+            penSize[currentPenType],
+            currentPenType,
+          );
+
+          break;
+        }
+        case "erase": {
+          currentPath.current = createPath(
+            flooredX,
+            flooredY,
+            currentPenColor,
+            penSize[currentPenType],
+            "erasing",
+          );
+
+          break;
+        }
+        default:
+          break;
+      }
+      prevPointRef.current = { x: flooredX, y: flooredY };
+    },
+    [currentMode, currentPenColor, currentPenType, isDrawing],
+  );
+
+  const touchActive = useCallback(
+    ({ x, y }) => {
+      if (!isDrawing) return;
+
+      const flooredX = Math.floor(x);
+      const flooredY = Math.floor(y);
+
+      switch (currentMode) {
+        case undefined:
+        case "draw": {
+          const xMid = (prevPointRef.current.x + flooredX) / 2;
+          const yMid = (prevPointRef.current.y + flooredY) / 2;
+          currentPath.current.path.quadTo(
+            prevPointRef.current.x,
+            prevPointRef.current.y,
+            xMid,
+            yMid,
+          );
+
+          const newElement = {
+            type: currentPath.current.path.type,
+            path: currentPath.current.path.toSVGString(),
+            color: currentPath.current.color,
+            size: currentPath.current.size,
+            pathType: currentPath.current.pathType,
+          };
+
+          handleCurrentElemets(newElement);
+
+          break;
+        }
+
+        case "erase": {
+          const xMid = (prevPointRef.current.x + flooredX) / 2;
+          const yMid = (prevPointRef.current.y + flooredY) / 2;
+          currentPath.current.path.quadTo(
+            prevPointRef.current.x,
+            prevPointRef.current.y,
+            xMid,
+            yMid,
+          );
+
+          const newElement = {
+            type: currentPath.current.path.type,
+            path: currentPath.current.path.toSVGString(),
+            color: currentPath.current.color,
+            size: currentPath.current.size,
+            pathType: currentPath.current.pathType,
+          };
+
+          handleCurrentElemets(newElement);
+
+          break;
+        }
+
+        default:
+          break;
+      }
+      prevPointRef.current = { x: flooredX, y: flooredY };
+    },
+    [currentMode, handleCurrentElemets, isDrawing],
+  );
+
+  const touchFinish = useCallback(() => {
+    if (!isDrawing) return;
+    handlePrevElementsLengthList(currentElementsLength);
+    currentPath.current = null;
+    prevPointRef.current = null;
+    setDrawing(false);
+  }, [handlePrevElementsLengthList, currentElementsLength, isDrawing]);
+
   return useTouchHandler(
     {
-      onStart: ({ x, y }) => {
-        if (isDrawing) return;
-
-        setDrawing(true);
-        switch (currentMode) {
-          case undefined:
-          case "draw": {
-            currentPath.current = createPath(
-              x,
-              y,
-              currentPenColor,
-              penSize[currentPenType],
-              currentPenType,
-            );
-
-            break;
-          }
-          case "erase": {
-            currentPath.current = createPath(
-              x,
-              y,
-              currentPenColor,
-              penSize[currentPenType],
-              "erasing",
-            );
-
-            break;
-          }
-          default:
-            break;
-        }
-        prevPointRef.current = { x, y };
-      },
-
-      onActive: ({ x, y }) => {
-        switch (currentMode) {
-          case undefined:
-          case "draw": {
-            const xMid = (prevPointRef.current.x + x) / 2;
-            const yMid = (prevPointRef.current.y + y) / 2;
-            currentPath.current.path.quadTo(
-              prevPointRef.current.x,
-              prevPointRef.current.y,
-              xMid,
-              yMid,
-            );
-
-            handleCurrentElemets(currentPath.current);
-
-            break;
-          }
-
-          case "erase": {
-            const xMid = (prevPointRef.current.x + x) / 2;
-            const yMid = (prevPointRef.current.y + y) / 2;
-            currentPath.current.path.quadTo(
-              prevPointRef.current.x,
-              prevPointRef.current.y,
-              xMid,
-              yMid,
-            );
-
-            handleCurrentElemets(currentPath.current);
-
-            break;
-          }
-
-          default:
-            break;
-        }
-        prevPointRef.current = { x, y };
-      },
-
-      onEnd: () => {
-        currentPath.current = null;
-        handlePrevElementsLengthList(currentElements.length);
-        setDrawing(false);
-      },
+      onStart: touchStart,
+      onActive: touchActive,
+      onEnd: touchFinish,
     },
     [
       currentMode,

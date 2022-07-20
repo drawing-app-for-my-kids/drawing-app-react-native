@@ -5,7 +5,6 @@ import React, {
   useCallback,
   useState,
   useEffect,
-  useLayoutEffect,
 } from "react";
 import { StyleSheet } from "react-native";
 import {
@@ -16,41 +15,21 @@ import {
   Paint,
 } from "@shopify/react-native-skia";
 
+import { makeImageFile, filePathMaker } from "../utils/fileSystemHelper";
 import {
-  makeImageFile,
-  copyLoadImageFileToCacheDirectory,
-  temporaryPictureUri,
-} from "../utils/fileSystemHelper";
-
-import { resizeImageInfoMake } from "../utils/painterHelper";
+  addPictureToNotebook,
+  updatePicture,
+} from "../store/actions/noteBookActions";
+import { dispatchNotes } from "../store/index";
 import useTouchDrawing from "../hooks/useTouchDrawing";
 
-const MAX_CANVAS_WIDTH = 1051;
-const MAX_CANVAS_HEIGHT = 759;
-
 const SCanvas = (
-  { filePath, currentMode, currentPenColor, currentPenType, notebookId },
+  { currentMode, currentPenColor, currentPenType, notebookId },
   ref,
 ) => {
   const [canvasElements, setCanvasElements] = useState([]);
   const [prevCanvasElementLengthList, setPrevCanvasElementLengthList] =
     useState([]);
-  const [currentImage, setCurrentImage] = useState(temporaryPictureUri);
-  const [, updateState] = useState();
-  const forceUpdate = useCallback(() => updateState({}), []);
-
-  const loadImage = currentImage ? useImage(currentImage) : null;
-  const resizeImageInfo = useMemo(() => {
-    if (loadImage) {
-      return resizeImageInfoMake(
-        loadImage,
-        MAX_CANVAS_WIDTH,
-        MAX_CANVAS_HEIGHT,
-      );
-    } else {
-      return null;
-    }
-  }, [loadImage]);
 
   const handleCanvasElemets = useCallback(
     (newElement) =>
@@ -59,6 +38,8 @@ const SCanvas = (
       }),
     [],
   );
+
+  console.log("empty Canvas");
 
   const handlePrevCanvasElementLengthList = useCallback(
     (elementLength) => {
@@ -94,35 +75,30 @@ const SCanvas = (
     [],
   );
 
-  const handleTempSave = useCallback(async () => {
+  const handleTempSave = async () => {
     const image = ref.current.makeImageSnapshot();
     if (image) {
-      const base64File = image.encodeToBase64();
-      await makeImageFile(temporaryPictureUri, base64File);
+      if (loadImage === null) {
+        const newDate = new Date();
+        const newPictureId = "picture" + newDate.getTime();
+        const newFilePath = filePathMaker(notebookId, newPictureId);
+
+        const newPictureInfo = {
+          _id: newPictureId,
+          createdAt: newDate,
+          updatedAt: newDate,
+          filePath: newFilePath,
+        };
+        const base64File = image.encodeToBase64();
+        await dispatchNotes(addPictureToNotebook(notebookId, newPictureInfo));
+        await makeImageFile(newFilePath, base64File);
+      } else {
+        const base64File = image.encodeToBase64();
+        await dispatchNotes(updatePicture(notebookId, pictureId));
+        await makeImageFile(filePath, base64File);
+      }
     }
-  }, [ref]);
-
-  useLayoutEffect(() => {
-    const makeTempImageFile = async () => {
-      await copyLoadImageFileToCacheDirectory(filePath);
-    };
-
-    makeTempImageFile();
-  }, [filePath]);
-
-  useEffect(() => {
-    const batchProcess = async () => {
-      await handleTempSave();
-      setTimeout(() => setCurrentImage(temporaryPictureUri), 1000);
-      setTimeout(() => setCanvasElements([]), 1000);
-      setTimeout(() => setPrevCanvasElementLengthList([]), 1000);
-    };
-
-    if (prevCanvasElementLengthList.length > 3) {
-      console.log("hi");
-      batchProcess();
-    }
-  }, [prevCanvasElementLengthList, canvasElements, handleTempSave]);
+  };
 
   useEffect(() => {
     ref.current.handleDeleteLastElement = () => {
@@ -141,10 +117,20 @@ const SCanvas = (
     };
   }, [ref, canvasElements, prevCanvasElementLengthList]);
 
+  useEffect(() => {
+    const lastElementLength =
+      prevCanvasElementLengthList[prevCanvasElementLengthList.length - 1];
+
+    if (prevCanvasElementLengthList.length > 3) {
+      console.log("hi");
+    }
+  }, [prevCanvasElementLengthList]);
+  //prevCanvasElement의 마지막 길이가 특정 이상이면
+  // 현재 캔버스 저장하고, 엘리먼트 갯수 줄인다.
+
   return (
     <Fragment>
       <Canvas style={styles.canvas} onTouch={touchHandler} ref={ref}>
-        {loadImage && LoadImage(loadImage, resizeImageInfo)}
         {canvasElements.map((element, index) => {
           switch (element.type) {
             case "image":
@@ -237,7 +223,7 @@ const SCanvas = (
   );
 };
 
-export const SkiaCanvas = forwardRef(SCanvas);
+export const SkiaEmptyCanvas = forwardRef(SCanvas);
 
 const styles = StyleSheet.create({
   canvas: {

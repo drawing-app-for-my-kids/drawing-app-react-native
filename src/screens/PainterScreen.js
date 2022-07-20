@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import styled from "styled-components/native";
 import { View, StyleSheet, Pressable, FlatList } from "react-native";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -8,7 +8,7 @@ import Feather from "@expo/vector-icons/Feather";
 import ColorButtonItem from "../components/buttons/ColorButton";
 import { colorList } from "../constants/painterOptions";
 import { SkiaCanvas } from "../components/Canvas";
-import { useCanvasRef } from "@shopify/react-native-skia";
+import { SkiaEmptyCanvas } from "../components/EmptyCanvas";
 import {
   makeImageFile,
   deletePathFromDocumentDirectory,
@@ -27,33 +27,13 @@ const PainterScreen = ({ route, navigation }) => {
   const [currentMode, setCurrentMode] = useState("draw");
   const [currentPenType, setCurrentPenType] = useState("grease-pencil");
   const [currentPenColor, setCurrentPenColor] = useState("black");
-  const [currentElements, setCurrentElements] = useState([]);
-  const [prevElementsLengthList, setPrevElementsLengthList] = useState([]);
-  const canvasRef = useCanvasRef();
+  const canvasRef = useRef(null);
 
   const filePath = route.params.item ? route.params.item.filePath : null;
   const pictureId = route.params.item ? route.params.item._id : null;
   const notebookId = route.params.notebookId;
 
-  const handleCurrentElemets = (newElement) =>
-    setCurrentElements((prevState) => {
-      return [...prevState, newElement];
-    });
-
-  const handlePrevElementsLengthList = (elementLength) => {
-    setPrevElementsLengthList([...prevElementsLengthList, elementLength]);
-  };
-
-  const handleUndo = () => {
-    const redoElements = currentElements.slice(
-      0,
-      prevElementsLengthList[prevElementsLengthList.length - 1],
-    );
-    setCurrentElements(redoElements);
-    setPrevElementsLengthList(
-      prevElementsLengthList.slice(0, prevElementsLengthList.length - 1),
-    );
-  };
+  console.log(canvasRef.current);
 
   const handleSave = async () => {
     const image = canvasRef.current.makeImageSnapshot();
@@ -99,17 +79,23 @@ const PainterScreen = ({ route, navigation }) => {
   return (
     <Contatiner>
       <LeftMainView>
-        <SkiaCanvas
-          ref={canvasRef}
-          filePath={filePath}
-          currentElements={currentElements}
-          currentMode={currentMode}
-          currentPenColor={currentPenColor}
-          currentPenType={currentPenType}
-          prevElementsLengthList={prevElementsLengthList}
-          handleCurrentElemets={handleCurrentElemets}
-          handlePrevElementsLengthList={handlePrevElementsLengthList}
-        />
+        {filePath && (
+          <SkiaCanvas
+            filePath={filePath}
+            currentMode={currentMode}
+            currentPenColor={currentPenColor}
+            currentPenType={currentPenType}
+            ref={canvasRef}
+          />
+        )}
+        {!filePath && (
+          <SkiaEmptyCanvas
+            currentMode={currentMode}
+            currentPenColor={currentPenColor}
+            currentPenType={currentPenType}
+            ref={canvasRef}
+          />
+        )}
       </LeftMainView>
       <RightControlView>
         <ButtonsView>
@@ -159,7 +145,7 @@ const PainterScreen = ({ route, navigation }) => {
               }}
             />
           </ColorPickerButton>
-          <EraserPickerButton onPress={() => setCurrentMode(() => "erase")}>
+          <EraserPickerButton onPress={() => setCurrentMode("erase")}>
             <MaterialCommunityIcons name="eraser" size={72} color="black" />
             {currentMode === "erase" && (
               <SelectedMark>
@@ -167,7 +153,10 @@ const PainterScreen = ({ route, navigation }) => {
               </SelectedMark>
             )}
           </EraserPickerButton>
-          <UndoButton onPress={handleUndo}>
+          <UndoButton
+            onPress={() => {
+              canvasRef.current.handleDeleteLastElement();
+            }}>
             <MaterialCommunityIcons
               name="undo-variant"
               size={72}
@@ -210,7 +199,7 @@ const PainterScreen = ({ route, navigation }) => {
                 <PenModalTextBox
                   onPress={() => {
                     setCurrentModal(null);
-                    setCurrentPenType(() => "grease-pencil");
+                    setCurrentPenType("grease-pencil");
                   }}>
                   <MaterialCommunityIcons
                     name="grease-pencil"
@@ -221,7 +210,7 @@ const PainterScreen = ({ route, navigation }) => {
                 <PenModalTextBox
                   onPress={() => {
                     setCurrentModal(null);
-                    setCurrentPenType(() => "brush");
+                    setCurrentPenType("brush");
                   }}>
                   <MaterialCommunityIcons
                     name="brush"
@@ -232,7 +221,7 @@ const PainterScreen = ({ route, navigation }) => {
                 <PenModalTextBox
                   onPress={() => {
                     setCurrentModal(null);
-                    setCurrentPenType(() => "format-paint");
+                    setCurrentPenType("format-paint");
                   }}>
                   <MaterialCommunityIcons
                     name="format-paint"
@@ -243,7 +232,7 @@ const PainterScreen = ({ route, navigation }) => {
                 <PenModalTextBox
                   onPress={() => {
                     setCurrentModal(null);
-                    setCurrentPenType(() => "spray");
+                    setCurrentPenType("spray");
                   }}>
                   <MaterialCommunityIcons
                     name="spray"
@@ -252,7 +241,7 @@ const PainterScreen = ({ route, navigation }) => {
                   />
                 </PenModalTextBox>
               </PenModalView>
-              <ModalCloseButton onPress={() => setCurrentModal(() => null)}>
+              <ModalCloseButton onPress={() => setCurrentModal(null)}>
                 <Feather name="x-circle" size={22} color="black" />
               </ModalCloseButton>
             </View>
@@ -263,7 +252,7 @@ const PainterScreen = ({ route, navigation }) => {
           transparent={true}
           visible={currentModal === "colorModal"}
           onRequestClose={() => {
-            setCurrentModal(() => null);
+            setCurrentModal(null);
           }}>
           <View style={styles.colorCenteredView}>
             <View style={styles.colorModalView}>
@@ -273,8 +262,8 @@ const PainterScreen = ({ route, navigation }) => {
                   <ColorButtonItem
                     color={item}
                     PressHandler={(color) => {
-                      setCurrentPenColor(() => color);
-                      setCurrentModal(() => null);
+                      setCurrentPenColor(color);
+                      setCurrentModal(null);
                     }}
                   />
                 )}
@@ -282,7 +271,7 @@ const PainterScreen = ({ route, navigation }) => {
                 numColumns={7}
                 style={{ width: 400, height: 400 }}
               />
-              <ModalCloseButton onPress={() => setCurrentModal(() => null)}>
+              <ModalCloseButton onPress={() => setCurrentModal(null)}>
                 <Feather name="x-circle" size={24} color="black" />
               </ModalCloseButton>
             </View>
