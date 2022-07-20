@@ -1,17 +1,3 @@
-import { Skia } from "@shopify/react-native-skia";
-
-export const createPath = (x, y, color, size, pathType) => {
-  const path = Skia.Path.Make();
-  path.moveTo(x, y);
-  return {
-    type: "path",
-    path,
-    color,
-    size,
-    pathType,
-  };
-};
-
 export const resizeImageInfoMake = (
   loadImage,
   MAX_CANVAS_WIDTH,

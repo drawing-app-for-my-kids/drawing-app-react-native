@@ -4,10 +4,8 @@ import * as FileSystem from "expo-file-system";
 
 const { documentDirectory, cacheDirectory } = FileSystem;
 const temporaryPicture = "temporaryPicture.png";
-const temporaryCannyPicture = "temporaryCannyPicture.png";
 
 export const temporaryPictureUri = cacheDirectory + temporaryPicture;
-export const temporaryCannyPictureUri = cacheDirectory + temporaryCannyPicture;
 
 export const filePathMaker = (folderName, fileName) => {
   const filePath =
@@ -25,17 +23,6 @@ export const folderPathMaker = (folderName) => {
 // 로컬 폴더, 파일 CRUD
 
 // 1) 디렉토리 관련 처리
-
-export const readDirectoryFromDocumentDirectory = async (folderName = "") => {
-  try {
-    const result = await FileSystem.readDirectoryAsync(
-      documentDirectory + folderName,
-    );
-    console.log("Return is", result);
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 export const makeNotebooksDirectoryToFileSystem = async () => {
   try {
@@ -82,28 +69,6 @@ export const makeImageFile = async (filePath, base64Contents) => {
     });
 
     console.log("파일 생성 성공!");
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-// 로컬 파일 읽기
-
-export const readImageFile = async (filePath) => {
-  try {
-    const result = await FileSystem.readAsStringAsync(filePath, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-export const readTemporaryImageFile = async () => {
-  try {
-    const result = await FileSystem.readAsStringAsync(temporaryPictureUri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
   } catch (error) {
     console.log(error);
   }
@@ -167,35 +132,6 @@ export const copyProcessImageFileToCacheDirectory = async (
   }
 };
 
-export const copyLoadImageFileToCacheDirectory = async (loadImageFilePath) => {
-  try {
-    await FileSystem.copyAsync({
-      from: loadImageFilePath,
-      to: temporaryPictureUri,
-    });
-
-    console.log("처리이미지 경로", loadImageFilePath);
-    console.log("대상 임시파일 경로", temporaryPictureUri);
-    const result = await FileSystem.getInfoAsync(temporaryPictureUri);
-    console.log("이미지 처리 파일 덮어쓰기 성공!", result.exists);
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-export const copyMainFolder = async (processImageFilePath) => {
-  try {
-    await FileSystem.copyAsync({
-      from: processImageFilePath,
-      to: "file:///Users/wonilnam/processImage.png",
-    });
-
-    console.log("메인 폴더 복사 성공");
-  } catch (error) {
-    console.log(error);
-  }
-};
-
 // 삭제 로컬 파일
 
 export const deletePathFromDocumentDirectory = async (path) => {
@@ -211,15 +147,6 @@ export const deleteFolderFromDocumentDirectory = async (folderName) => {
   try {
     await FileSystem.deleteAsync(folderPathMaker(folderName));
     console.log("폴더 삭제 성공");
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-export const deleteNotebooksFolderFromDocumentDirectory = async () => {
-  try {
-    await FileSystem.deleteAsync(documentDirectory + "notebooks");
-    console.log("노트북 폴더 삭제 성공");
   } catch (error) {
     console.log(error);
   }

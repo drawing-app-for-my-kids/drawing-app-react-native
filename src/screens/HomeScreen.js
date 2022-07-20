@@ -10,10 +10,8 @@ import {
   Pressable,
   TextInput,
 } from "react-native";
-
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-
 import Feather from "@expo/vector-icons/Feather";
 import NoteBookItem from "../components/buttons/NoteBookItem";
 import bookCoverImageList from "../constants/bookCoverImageList";
@@ -172,7 +170,9 @@ const HomeScreen = ({ navigation }) => {
           }}>
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-              <ModalText>{`수오지오를 위한 아빠의 선물 😘`}</ModalText>
+              <ModalText>{"아이들을 위한 드로잉 앱"}</ModalText>
+              <ModalText>{`Ver 1.0.0`}</ModalText>
+              <ModalText>{`for SJ`}</ModalText>
               <ModalCloseButton onPress={() => setCurrentModal(null)}>
                 <Feather name="x-circle" size={24} color="black" />
               </ModalCloseButton>
@@ -192,15 +192,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "flex-end",
-    marginRight: 145,
+    marginRight: 147,
   },
   modalView: {
-    width: "100%",
-    height: "91.1%",
-    paddingLeft: 25,
+    width: "40%",
+    height: "90%",
     backgroundColor: "white",
     borderRadius: 20,
     paddingTop: 50,
+    paddingLeft: 20,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -257,8 +257,8 @@ const InfoModal = styled(Modal)``;
 
 const ModalText = styled(Text)`
   margin-bottom: 15px;
-  text-align: center;
-  font-size: 48px;
+  text-align: left;
+  font-size: 32px;
 `;
 
 const NewNoteModal = styled(Modal)``;
