@@ -36,8 +36,6 @@ const SCanvas = (
   const [prevCanvasElementLengthList, setPrevCanvasElementLengthList] =
     useState([]);
   const [currentImage, setCurrentImage] = useState(temporaryPictureUri);
-  const [, updateState] = useState();
-  const forceUpdate = useCallback(() => updateState({}), []);
 
   const loadImage = currentImage ? useImage(currentImage) : null;
   const resizeImageInfo = useMemo(() => {

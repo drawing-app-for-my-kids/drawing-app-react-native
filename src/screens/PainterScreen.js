@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useLayoutEffect } from "react";
 import styled from "styled-components/native";
 import { View, StyleSheet, Pressable, FlatList } from "react-native";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -7,8 +7,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
 import ColorButtonItem from "../components/buttons/ColorButton";
 import { colorList } from "../constants/painterOptions";
-import { SkiaCanvas } from "../components/Canvas";
-import { SkiaEmptyCanvas } from "../components/EmptyCanvas";
+import SketchCanvas from "../components/SketchCanvas";
+
 import {
   makeImageFile,
   deletePathFromDocumentDirectory,
@@ -33,11 +33,9 @@ const PainterScreen = ({ route, navigation }) => {
   const pictureId = route.params.item ? route.params.item._id : null;
   const notebookId = route.params.notebookId;
 
-  console.log(canvasRef.current);
-
   const handleSave = async () => {
-    const image = canvasRef.current.makeImageSnapshot();
-    if (image) {
+    const imageBase64 = canvasRef.current.toBase64();
+    if (imageBase64) {
       if (filePath === null) {
         const newDate = new Date();
         const newPictureId = "picture" + newDate.getTime();
@@ -49,22 +47,19 @@ const PainterScreen = ({ route, navigation }) => {
           updatedAt: newDate,
           filePath: newFilePath,
         };
-        const base64File = image.encodeToBase64();
         await dispatchNotes(addPictureToNotebook(notebookId, newPictureInfo));
-        await makeImageFile(newFilePath, base64File);
+        await makeImageFile(newFilePath, imageBase64);
       } else {
-        const base64File = image.encodeToBase64();
         await dispatchNotes(updatePicture(notebookId, pictureId));
-        await makeImageFile(filePath, base64File);
+        await makeImageFile(filePath, imageBase64);
       }
     }
   };
 
   const handleSaveToCameraRoll = async () => {
-    const image = canvasRef.current.makeImageSnapshot();
-    if (image) {
-      const base64File = image.encodeToBase64();
-      await makeImageFile(filePath, base64File);
+    const imageBase64 = canvasRef.current.toBase64();
+    if (imageBase64) {
+      await makeImageFile(filePath, imageBase64);
       await saveFileToCameraRoll(filePath);
     }
   };
@@ -76,32 +71,29 @@ const PainterScreen = ({ route, navigation }) => {
     }
   };
 
+  useLayoutEffect(() => {
+    canvasRef.current.reset();
+  }, []);
+
   return (
     <Contatiner>
       <LeftMainView>
-        {filePath && (
-          <SkiaCanvas
-            filePath={filePath}
-            currentMode={currentMode}
-            currentPenColor={currentPenColor}
-            currentPenType={currentPenType}
-            ref={canvasRef}
-          />
-        )}
-        {!filePath && (
-          <SkiaEmptyCanvas
-            currentMode={currentMode}
-            currentPenColor={currentPenColor}
-            currentPenType={currentPenType}
-            ref={canvasRef}
-          />
-        )}
+        <SketchCanvas
+          filePath={filePath}
+          currentMode={currentMode}
+          currentPenColor={currentPenColor}
+          currentPenType={currentPenType}
+          ref={canvasRef}
+        />
       </LeftMainView>
       <RightControlView>
         <ButtonsView>
           <SaveFileButton
             onPress={async () => {
               await handleSave();
+              if (canvasRef.current) {
+                canvasRef.current.reset();
+              }
               navigation.goBack();
             }}>
             <MaterialIcons name="save" size={72} color="black" />
@@ -145,17 +137,9 @@ const PainterScreen = ({ route, navigation }) => {
               }}
             />
           </ColorPickerButton>
-          <EraserPickerButton onPress={() => setCurrentMode("erase")}>
-            <MaterialCommunityIcons name="eraser" size={72} color="black" />
-            {currentMode === "erase" && (
-              <SelectedMark>
-                <FontAwesome5 name="check-circle" size={22} color="black" />
-              </SelectedMark>
-            )}
-          </EraserPickerButton>
           <UndoButton
             onPress={() => {
-              canvasRef.current.handleDeleteLastElement();
+              canvasRef.current.undo();
             }}>
             <MaterialCommunityIcons
               name="undo-variant"
@@ -163,6 +147,16 @@ const PainterScreen = ({ route, navigation }) => {
               color="black"
             />
           </UndoButton>
+          <RedoButton
+            onPress={() => {
+              canvasRef.current.redo();
+            }}>
+            <MaterialCommunityIcons
+              name="redo-variant"
+              size={72}
+              color="black"
+            />
+          </RedoButton>
           <DeleteButton
             onPress={async () => {
               await handleDeletePicture();
@@ -376,9 +370,6 @@ const PenPickerButton = styled.Pressable`
   position: relative;
 `;
 const ColorPickerButton = styled.Pressable``;
-const EraserPickerButton = styled.Pressable`
-  position: relative;
-`;
 
 const SelectedMark = styled.Text`
   position: absolute;
@@ -387,6 +378,8 @@ const SelectedMark = styled.Text`
 `;
 
 const UndoButton = styled.Pressable``;
+const RedoButton = styled.Pressable``;
+
 const DeleteButton = styled.Pressable``;
 
 const PenModal = styled.Modal``;
