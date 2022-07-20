@@ -25,16 +25,7 @@ const MAX_CANVAS_HEIGHT = 759;
 
 const SketchCanvas = forwardRef(
   (
-    {
-      filePath,
-      currentMode,
-      currentPenType,
-      currentPenColor,
-      strokeStyle = "fill",
-      notebookId,
-      children,
-      topChildren,
-    },
+    { filePath, currentPenType, currentPenColor, strokeStyle = "fill" },
     ref,
   ) => {
     const loadImage = filePath ? useImage(filePath) : null;
@@ -150,7 +141,6 @@ const SketchCanvas = forwardRef(
 
     return (
       <Canvas ref={canvasRef} onTouch={touchHandler} style={styles.canvas}>
-        {children}
         {loadImage && LoadImage(loadImage, resizeImageInfo)}
         {pathsSnapshot.completed.map((path) => (
           <Path
@@ -169,7 +159,6 @@ const SketchCanvas = forwardRef(
         ) : (
           <></>
         )}
-        {topChildren}
       </Canvas>
     );
   },

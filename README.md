@@ -58,10 +58,10 @@ Install dependencies
   npm install
 ```
 
-Start the server
+Start with Simulator
 
 ```bash
-  npm run start
+  npx react-native run-ios --simulator="iPad Pro (11-inch) (3rd generation)"
 ```
 
 ## 내가 배운 것들
@@ -70,10 +70,6 @@ Start the server
 - 리액트 네이티브의 한계점
 - Expo CLI와 React Native CLI의 차이점
 - 렌더링 최적화
-
-## 최적화
-
-- 그림판의 최적화를 위해 어떤 고민을 하였는가?
 
 ## 라이센스
 
@@ -85,4 +81,4 @@ Start the server
 
 ## 만든 사람
 
-- 남원일 / apotatos11dev@gmail.com
+- apotatos11dev@gmail.com
