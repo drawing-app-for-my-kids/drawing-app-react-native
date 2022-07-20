@@ -38,7 +38,6 @@ const ImageProcessingScreen = ({ route, navigation }) => {
   const [onInputUrlModal, setInputUrlModal] = useState(false);
   const [currentInputUrl, setInputUrl] = useState(null);
   const [imageSource, setImageSource] = useState(null);
-
   const [sigma, setSigma] = useState(1.3);
   const [lowThreshold, setLowThreshold] = useState(30);
   const [highThreshold, setHighThreshold] = useState(70);
@@ -319,7 +318,6 @@ const ImageProcessingScreen = ({ route, navigation }) => {
             <InfoModalText>
               {"• Sigma 값이 커질수록 주위 경계가 불분명해진다."}
             </InfoModalText>
-
             <InfoModalText>{}</InfoModalText>
             <InfoModalSmallTitle>
               {"▸ Low Threshold & High Threshold"}
@@ -355,7 +353,6 @@ const ImageProcessingScreen = ({ route, navigation }) => {
             <InfoModalText>
               {"•픽셀 그래디언트를 통해 경계를 감지한다."}
             </InfoModalText>
-
             <InfoModalCloseButton onPress={() => setCurrentModal(null)}>
               <Feather name="x-circle" size={24} color="black" />
             </InfoModalCloseButton>

@@ -16,7 +16,7 @@ export default function App() {
     try {
       setTimeout(() => {
         SplashScreen.hide();
-      }, 5000);
+      }, 2000);
     } catch (error) {
       console.warn("에러발생");
       console.warn(error);
@@ -30,7 +30,7 @@ export default function App() {
           name="Home"
           component={HomeScreen}
           options={{
-            title: "홈",
+            title: "그림 노트 목록",
             headerStyle: {
               backgroundColor: "silver",
             },

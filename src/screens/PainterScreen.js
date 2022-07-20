@@ -1,14 +1,13 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useLayoutEffect } from "react";
 import styled from "styled-components/native";
-import { View, StyleSheet, Pressable, FlatList } from "react-native";
+import { View, StyleSheet, Pressable, FlatList, Modal } from "react-native";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
 import ColorButtonItem from "../components/buttons/ColorButton";
 import { colorList } from "../constants/painterOptions";
-import { SkiaCanvas } from "../components/Canvas";
-import { SkiaEmptyCanvas } from "../components/EmptyCanvas";
+import SketchCanvas from "../components/SketchCanvas";
+
 import {
   makeImageFile,
   deletePathFromDocumentDirectory,
@@ -23,7 +22,7 @@ import {
 import { dispatchNotes } from "../store/index";
 
 const PainterScreen = ({ route, navigation }) => {
-  const [currentModal, setCurrentModal] = useState();
+  const [currentModal, setCurrentModal] = useState(null);
   const [currentMode, setCurrentMode] = useState("draw");
   const [currentPenType, setCurrentPenType] = useState("grease-pencil");
   const [currentPenColor, setCurrentPenColor] = useState("black");
@@ -33,11 +32,9 @@ const PainterScreen = ({ route, navigation }) => {
   const pictureId = route.params.item ? route.params.item._id : null;
   const notebookId = route.params.notebookId;
 
-  console.log(canvasRef.current);
-
   const handleSave = async () => {
-    const image = canvasRef.current.makeImageSnapshot();
-    if (image) {
+    const imageBase64 = canvasRef.current.toBase64();
+    if (imageBase64) {
       if (filePath === null) {
         const newDate = new Date();
         const newPictureId = "picture" + newDate.getTime();
@@ -49,22 +46,19 @@ const PainterScreen = ({ route, navigation }) => {
           updatedAt: newDate,
           filePath: newFilePath,
         };
-        const base64File = image.encodeToBase64();
         await dispatchNotes(addPictureToNotebook(notebookId, newPictureInfo));
-        await makeImageFile(newFilePath, base64File);
+        await makeImageFile(newFilePath, imageBase64);
       } else {
-        const base64File = image.encodeToBase64();
         await dispatchNotes(updatePicture(notebookId, pictureId));
-        await makeImageFile(filePath, base64File);
+        await makeImageFile(filePath, imageBase64);
       }
     }
   };
 
   const handleSaveToCameraRoll = async () => {
-    const image = canvasRef.current.makeImageSnapshot();
-    if (image) {
-      const base64File = image.encodeToBase64();
-      await makeImageFile(filePath, base64File);
+    const imageBase64 = canvasRef.current.toBase64();
+    if (imageBase64) {
+      await makeImageFile(filePath, imageBase64);
       await saveFileToCameraRoll(filePath);
     }
   };
@@ -76,32 +70,29 @@ const PainterScreen = ({ route, navigation }) => {
     }
   };
 
+  useLayoutEffect(() => {
+    canvasRef.current.reset();
+  }, []);
+
   return (
     <Contatiner>
       <LeftMainView>
-        {filePath && (
-          <SkiaCanvas
-            filePath={filePath}
-            currentMode={currentMode}
-            currentPenColor={currentPenColor}
-            currentPenType={currentPenType}
-            ref={canvasRef}
-          />
-        )}
-        {!filePath && (
-          <SkiaEmptyCanvas
-            currentMode={currentMode}
-            currentPenColor={currentPenColor}
-            currentPenType={currentPenType}
-            ref={canvasRef}
-          />
-        )}
+        <SketchCanvas
+          filePath={filePath}
+          currentMode={currentMode}
+          currentPenColor={currentPenColor}
+          currentPenType={currentPenType}
+          ref={canvasRef}
+        />
       </LeftMainView>
       <RightControlView>
         <ButtonsView>
           <SaveFileButton
             onPress={async () => {
               await handleSave();
+              if (canvasRef.current) {
+                canvasRef.current.reset();
+              }
               navigation.goBack();
             }}>
             <MaterialIcons name="save" size={72} color="black" />
@@ -145,17 +136,9 @@ const PainterScreen = ({ route, navigation }) => {
               }}
             />
           </ColorPickerButton>
-          <EraserPickerButton onPress={() => setCurrentMode("erase")}>
-            <MaterialCommunityIcons name="eraser" size={72} color="black" />
-            {currentMode === "erase" && (
-              <SelectedMark>
-                <FontAwesome5 name="check-circle" size={22} color="black" />
-              </SelectedMark>
-            )}
-          </EraserPickerButton>
           <UndoButton
             onPress={() => {
-              canvasRef.current.handleDeleteLastElement();
+              canvasRef.current.undo();
             }}>
             <MaterialCommunityIcons
               name="undo-variant"
@@ -163,10 +146,19 @@ const PainterScreen = ({ route, navigation }) => {
               color="black"
             />
           </UndoButton>
+          <RedoButton
+            onPress={() => {
+              canvasRef.current.redo();
+            }}>
+            <MaterialCommunityIcons
+              name="redo-variant"
+              size={72}
+              color="black"
+            />
+          </RedoButton>
           <DeleteButton
-            onPress={async () => {
-              await handleDeletePicture();
-              navigation.goBack();
+            onPress={() => {
+              setCurrentModal("deletePictureModal");
             }}>
             <MaterialCommunityIcons
               name="delete-empty"
@@ -277,6 +269,35 @@ const PainterScreen = ({ route, navigation }) => {
             </View>
           </View>
         </ColorModal>
+        <DeletePictureModal
+          animationType="slide"
+          transparent={true}
+          visible={currentModal === "deletePictureModal"}
+          onRequestClose={() => {
+            setCurrentModal(null);
+          }}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <ModalView>
+                <ModalCautionView>
+                  <ModalCautionText>그림을 삭제 하시겠습니까?</ModalCautionText>
+                </ModalCautionView>
+                <ModalButtonView>
+                  <ModalButton onPress={() => setCurrentModal(null)}>
+                    <ModalButtonText>취소</ModalButtonText>
+                  </ModalButton>
+                  <ModalButton
+                    onPress={async () => {
+                      await handleDeletePicture();
+                      navigation.goBack();
+                    }}>
+                    <ModalButtonText>삭제</ModalButtonText>
+                  </ModalButton>
+                </ModalButtonView>
+              </ModalView>
+            </View>
+          </View>
+        </DeletePictureModal>
       </RightControlView>
     </Contatiner>
   );
@@ -289,6 +310,28 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     backgroundColor: "white",
+  },
+  centeredView: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+    marginRight: 150,
+    marginBottom: 20,
+  },
+  modalView: {
+    width: 300,
+    height: 200,
+    backgroundColor: "white",
+    borderRadius: 20,
+    paddingTop: 50,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
   penCenteredView: {
     flex: 1,
@@ -376,9 +419,6 @@ const PenPickerButton = styled.Pressable`
   position: relative;
 `;
 const ColorPickerButton = styled.Pressable``;
-const EraserPickerButton = styled.Pressable`
-  position: relative;
-`;
 
 const SelectedMark = styled.Text`
   position: absolute;
@@ -387,6 +427,8 @@ const SelectedMark = styled.Text`
 `;
 
 const UndoButton = styled.Pressable``;
+const RedoButton = styled.Pressable``;
+
 const DeleteButton = styled.Pressable``;
 
 const PenModal = styled.Modal``;
@@ -423,4 +465,48 @@ const CurrentColorPreview = styled.Text`
   height: 24px;
   border-radius: 12px;
   border: 2px solid white;
+`;
+
+const DeletePictureModal = styled(Modal)``;
+const ModalView = styled.View`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ModalCautionView = styled.View`
+  width: 250px;
+  height: 50px;
+  display: flex;
+  border-radius: 5px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+`;
+const ModalCautionText = styled.Text`
+  font-size: 22px;
+  font-weight: bold;
+  color: red;
+`;
+
+const ModalButtonView = styled.View`
+  display: flex;
+  flex-direction: row;
+`;
+
+const ModalButton = styled.Pressable`
+  border: 2px solid black;
+  border-radius: 5px;
+  width: 100px;
+  height: 35px;
+  margin: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ModalButtonText = styled.Text`
+  font-size: 15px;
+  font-weight: bold;
+  color: black;
 `;
