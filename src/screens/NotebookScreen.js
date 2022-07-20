@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import { Text, FlatList, Modal, View, StyleSheet } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import styled from "styled-components/native";

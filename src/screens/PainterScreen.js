@@ -1,6 +1,6 @@
 import React, { useState, useRef, useLayoutEffect } from "react";
 import styled from "styled-components/native";
-import { View, StyleSheet, Pressable, FlatList } from "react-native";
+import { View, StyleSheet, Pressable, FlatList, Modal } from "react-native";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -23,7 +23,7 @@ import {
 import { dispatchNotes } from "../store/index";
 
 const PainterScreen = ({ route, navigation }) => {
-  const [currentModal, setCurrentModal] = useState();
+  const [currentModal, setCurrentModal] = useState(null);
   const [currentMode, setCurrentMode] = useState("draw");
   const [currentPenType, setCurrentPenType] = useState("grease-pencil");
   const [currentPenColor, setCurrentPenColor] = useState("black");
@@ -158,9 +158,8 @@ const PainterScreen = ({ route, navigation }) => {
             />
           </RedoButton>
           <DeleteButton
-            onPress={async () => {
-              await handleDeletePicture();
-              navigation.goBack();
+            onPress={() => {
+              setCurrentModal("deletePictureModal");
             }}>
             <MaterialCommunityIcons
               name="delete-empty"
@@ -271,6 +270,35 @@ const PainterScreen = ({ route, navigation }) => {
             </View>
           </View>
         </ColorModal>
+        <DeletePictureModal
+          animationType="slide"
+          transparent={true}
+          visible={currentModal === "deletePictureModal"}
+          onRequestClose={() => {
+            setCurrentModal(null);
+          }}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <ModalView>
+                <ModalCautionView>
+                  <ModalCautionText>그림을 삭제 하시겠습니까?</ModalCautionText>
+                </ModalCautionView>
+                <ModalButtonView>
+                  <ModalButton onPress={() => setCurrentModal(null)}>
+                    <ModalButtonText>취소</ModalButtonText>
+                  </ModalButton>
+                  <ModalButton
+                    onPress={async () => {
+                      await handleDeletePicture();
+                      navigation.goBack();
+                    }}>
+                    <ModalButtonText>삭제</ModalButtonText>
+                  </ModalButton>
+                </ModalButtonView>
+              </ModalView>
+            </View>
+          </View>
+        </DeletePictureModal>
       </RightControlView>
     </Contatiner>
   );
@@ -283,6 +311,28 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     backgroundColor: "white",
+  },
+  centeredView: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+    marginRight: 150,
+    marginBottom: 20,
+  },
+  modalView: {
+    width: 300,
+    height: 200,
+    backgroundColor: "white",
+    borderRadius: 20,
+    paddingTop: 50,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
   penCenteredView: {
     flex: 1,
@@ -416,4 +466,48 @@ const CurrentColorPreview = styled.Text`
   height: 24px;
   border-radius: 12px;
   border: 2px solid white;
+`;
+
+const DeletePictureModal = styled(Modal)``;
+const ModalView = styled.View`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ModalCautionView = styled.View`
+  width: 250px;
+  height: 50px;
+  display: flex;
+  border-radius: 5px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+`;
+const ModalCautionText = styled.Text`
+  font-size: 22px;
+  font-weight: bold;
+  color: red;
+`;
+
+const ModalButtonView = styled.View`
+  display: flex;
+  flex-direction: row;
+`;
+
+const ModalButton = styled.Pressable`
+  border: 2px solid black;
+  border-radius: 5px;
+  width: 100px;
+  height: 35px;
+  margin: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ModalButtonText = styled.Text`
+  font-size: 15px;
+  font-weight: bold;
+  color: black;
 `;
