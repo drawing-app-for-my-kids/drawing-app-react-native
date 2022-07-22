@@ -227,7 +227,7 @@ const LeftMainView = styled.SafeAreaView`
 
 const RightControlView = styled.View`
   width: 12%;
-  background-color: silver;
+  background-color: white;
   padding-top: 30px;
   padding-bottom: 30px;
 

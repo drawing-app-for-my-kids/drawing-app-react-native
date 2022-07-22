@@ -32,7 +32,7 @@ export default function App() {
           options={{
             title: "그림 노트 목록",
             headerStyle: {
-              backgroundColor: "silver",
+              backgroundColor: "rgba(0, 0, 0, 0.1)",
             },
             headerTintColor: "black",
           }}
@@ -43,7 +43,7 @@ export default function App() {
           options={({ route }) => ({
             title: `${route.params.noteBookTitle} 노트북`,
             headerStyle: {
-              backgroundColor: "silver",
+              backgroundColor: "rgba(0, 0, 0, 0.1)",
             },
             headerTintColor: "black",
           })}
@@ -54,7 +54,7 @@ export default function App() {
           options={{
             title: "그림판",
             headerStyle: {
-              backgroundColor: "silver",
+              backgroundColor: "rgba(0, 0, 0, 0.1)",
             },
             headerTintColor: "black",
           }}
@@ -65,7 +65,7 @@ export default function App() {
           options={{
             title: "이미지 편집하기",
             headerStyle: {
-              backgroundColor: "silver",
+              backgroundColor: "rgba(0, 0, 0, 0.1)",
             },
             headerTintColor: "black",
           }}
