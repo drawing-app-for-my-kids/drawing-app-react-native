@@ -4,7 +4,6 @@ import {
   getItemFromAsyncStorage,
 } from "../utils/asyncStorageHelper";
 import getStroke from "perfect-freehand";
-// import { getSvgPathFromStroke } from "../utils";
 import { proxy } from "valtio";
 import { derive } from "valtio/utils";
 import getSvgPathFromStroke from "../utils/get-svg-path-from-stroke";
