@@ -108,14 +108,20 @@
 ## 앱 기능
 
 - 그림 노트북 생성 기능
+<img src="https://user-images.githubusercontent.com/78262571/181182871-ba521ab3-989e-4b0f-8e6b-c5a00a05bb71.gif">
+
 - 그림 생성 기능
   - 빈 그림 생성 기능
   - 사진첩 이미지 불러오기 기능
   - URL로 다운 받은 이미지 불러오기 기능
+<img src="https://user-images.githubusercontent.com/78262571/181183004-1d38a377-99bd-4023-a0fd-8ea127a95228.gif">
+
 - 이미지 채색 제거 기능
   - openCv라이브러리를 통한 Canny Edge Detection 알고리즘 적용
   - 이를 통해 색이 있는 그림의 색을 제거할 수 있습니다.
   - 알고리즘에 중요 변수들을 조절하여 알고리즘을 적용할 수 있습니다.
+<img src="https://user-images.githubusercontent.com/78262571/181182683-a46a58c0-f98e-4264-82ce-e4536bda9245.gif">
+
 - 그림판 기능
   - 파일 저장
   - 기기 사진첩 저장
@@ -125,6 +131,8 @@
   - 색 선택
   - Undo
   - 삭제
+<img src="https://user-images.githubusercontent.com/78262571/181183272-f1fd392b-e449-46e9-8b3b-c969bc530f9b.gif">
+
 
 ## 실행 방법
 
